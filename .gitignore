@@ -10,3 +10,7 @@ android/.gradle/
 .agents/
 .claude/
 skills-lock.json
+
+# Court trial and taste-skill working files (the verdict is kept in docs/court-verdict.md)
+.court/
+.taste-skill/

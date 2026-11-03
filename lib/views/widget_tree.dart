@@ -3,112 +3,81 @@ import 'package:flutter_app/data/app_state.dart';
 import 'package:flutter_app/data/constants.dart';
 import 'package:flutter_app/data/models.dart';
 import 'package:flutter_app/data/notifiers.dart';
-import 'package:flutter_app/views/pages/companion_home_page.dart';
-import 'package:flutter_app/views/pages/companion_requests_page.dart';
-import 'package:flutter_app/views/pages/helpers_page.dart';
+import 'package:flutter_app/views/pages/family_home_page.dart';
+import 'package:flutter_app/views/pages/find_requests_page.dart';
+import 'package:flutter_app/views/pages/profile_page.dart';
 import 'package:flutter_app/views/pages/senior_home_page.dart';
-import 'package:flutter_app/views/pages/senior_requests_page.dart';
-import 'package:flutter_app/views/pages/settings_page.dart';
-import 'package:flutter_app/views/pages/welcome_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_app/views/pages/visits_page.dart';
+import 'package:flutter_app/views/pages/volunteer_home_page.dart';
 
-import 'pages/profile_page.dart';
-import 'widgets/navbar_widgets.dart';
-
+/// The signed-in shell: a few labelled tabs per role, never hidden behind a
+/// menu or a gesture.
 class WidgetTree extends StatelessWidget {
   const WidgetTree({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = appState.currentUser.value!;
+    final (pages, items) = switch (user.role) {
+      UserRole.senior => (
+          [const SeniorHomePage(), VisitsPage(seniorId: user.id), const ProfilePage()],
+          const [
+            (Icons.home_outlined, Icons.home_rounded, "Home"),
+            (Icons.event_note_outlined, Icons.event_note_rounded, "My visits"),
+            (Icons.person_outline_rounded, Icons.person_rounded, "Profile"),
+          ],
+        ),
+      UserRole.family => (
+          [const FamilyHomePage(), VisitsPage(seniorId: user.seniorId!), const ProfilePage()],
+          const [
+            (Icons.home_outlined, Icons.home_rounded, "Home"),
+            (Icons.event_note_outlined, Icons.event_note_rounded, "Visits"),
+            (Icons.person_outline_rounded, Icons.person_rounded, "Profile"),
+          ],
+        ),
+      UserRole.volunteer => (
+          [const VolunteerHomePage(), const FindRequestsPage(), const VolunteerVisitsPage(), const ProfilePage()],
+          const [
+            (Icons.home_outlined, Icons.home_rounded, "Home"),
+            (Icons.search_rounded, Icons.search_rounded, "Find"),
+            (Icons.event_note_outlined, Icons.event_note_rounded, "My visits"),
+            (Icons.person_outline_rounded, Icons.person_rounded, "Profile"),
+          ],
+        ),
+    };
+
     return ValueListenableBuilder(
-      valueListenable: appState.currentUser,
-      builder: (context, user, child) {
-        if (user == null) {
-          // Shouldn't happen given the app's navigation flow, but avoids a
-          // crash if this screen is ever reached without a signed-in user.
-          return const WelcomePage();
-        }
-
-        final pages = user.role == UserRole.senior
-            ? const [SeniorHomePage(), SeniorRequestsPage(), HelpersPage(), ProfilePage()]
-            : const [CompanionHomePage(), CompanionRequestsPage(), ProfilePage()];
-
-        final navItems = user.role == UserRole.senior
-            ? const [
-                NavItem(icon: Icons.home_rounded, label: "Home"),
-                NavItem(icon: Icons.list_alt_rounded, label: "Requests"),
-                NavItem(icon: Icons.diversity_3_rounded, label: "Helpers"),
-                NavItem(icon: Icons.person_rounded, label: "Profile"),
-              ]
-            : const [
-                NavItem(icon: Icons.home_rounded, label: "Home"),
-                NavItem(icon: Icons.list_alt_rounded, label: "Requests"),
-                NavItem(icon: Icons.person_rounded, label: "Profile"),
-              ];
-
+      valueListenable: selectedPageNotifier,
+      builder: (context, selected, _) {
+        final index = selected.clamp(0, pages.length - 1);
+        final p = context.palette;
         return Scaffold(
-          extendBody: true,
-          appBar: AppBar(
-            title: const Text(
-              "Senior App",
-              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
+          body: SafeArea(
+            bottom: false,
+            child: AnimatedSwitcher(
+              duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 200),
+              child: KeyedSubtree(key: ValueKey(index), child: pages[index]),
             ),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            actions: [
-              IconButton(
-                onPressed: () async {
-                  isDarkModeNotifier.value = !isDarkModeNotifier.value;
-                  final SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.setBool(
-                    KConstants.ThemeModeKey,
-                    isDarkModeNotifier.value,
-                  );
-                },
-                icon: ValueListenableBuilder(
-                  valueListenable: isDarkModeNotifier,
-                  builder: (context, isDarkMode, child) {
-                    return Icon(
-                      isDarkMode ? Icons.light_mode : Icons.dark_mode_rounded,
-                      color: AppColors.textDark,
-                    );
-                  },
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsPage(title: "Settings"),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.settings, color: AppColors.textDark),
-              ),
-            ],
           ),
-          body: ValueListenableBuilder(
-            valueListenable: selectedPageNotifier,
-            builder: (context, selectedPage, child) {
-              // Guards against a stale tab index left over from the other
-              // role's tab count (e.g. switching accounts after being on a
-              // senior-only tab).
-              final safeIndex = selectedPage.clamp(0, pages.length - 1);
-              return AnimatedSwitcher(
-                duration: MediaQuery.disableAnimationsOf(context)
-                    ? Duration.zero
-                    : const Duration(milliseconds: 220),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                child: KeyedSubtree(
-                  key: ValueKey(safeIndex),
-                  child: pages.elementAt(safeIndex),
-                ),
-              );
-            },
+          // Tab labels are capped at 1.5x: four labels can't fit side by side
+          // at 2x, and every screen's own content still scales to 2x.
+          bottomNavigationBar: MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.5,
+            child: DecoratedBox(
+              decoration: BoxDecoration(border: Border(top: BorderSide(color: p.border))),
+              child: NavigationBar(
+                selectedIndex: index,
+                onDestinationSelected: (i) {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  selectedPageNotifier.value = i;
+                },
+                destinations: [
+                  for (final (icon, selectedIcon, label) in items)
+                    NavigationDestination(icon: Icon(icon), selectedIcon: Icon(selectedIcon), label: label),
+                ],
+              ),
+            ),
           ),
-          bottomNavigationBar: NavbarWidget(items: navItems),
         );
       },
     );

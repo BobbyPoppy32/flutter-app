@@ -1,119 +1,250 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/data/app_state.dart';
 import 'package:flutter_app/data/constants.dart';
-import 'package:flutter_app/views/pages/login_page.dart';
-import 'package:flutter_app/views/pages/role_selection_page.dart';
+import 'package:flutter_app/data/models.dart';
+import 'package:flutter_app/data/notifiers.dart';
 import 'package:flutter_app/views/widgets/app_widgets.dart';
-import 'package:lottie/lottie.dart';
+import 'package:flutter_app/views/widgets/visit_widgets.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final returning = appState.ownAccounts;
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Arch-shaped soft-mint backdrop behind the hero animation,
-                  // echoing the rounded-arch photo frames from the reference.
-                  ClipPath(
-                    clipper: _ArchClipper(),
-                    child: Container(
-                      height: 230,
-                      width: double.infinity,
-                      color: AppColors.tealStart.withOpacity(0.10),
-                      alignment: Alignment.center,
-                      // The source animation draws its house within a mostly
-                      // empty 800x800 canvas — zoom in so it reads as a hero
-                      // illustration instead of a small icon lost in the arch.
-                      child: Transform.scale(
-                        scale: 2.6,
-                        child: Lottie.asset(
-                          'assets/lotties/welcome.json',
-                          height: 260.0,
-                          width: double.infinity,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 28.0),
-                  Text(
-                    "Senior App",
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.heading1.copyWith(fontSize: 34.0, letterSpacing: 0.5),
-                  ),
-                  const SizedBox(height: 10.0),
-                  const Text(
-                    "Let's spread cheer & show that\nwe care for our elderly.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: AppColors.textGrey,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 36.0),
-
-                  GradientPillButton(
-                    label: "Get started",
-                    radius: AppRadius.pill,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RoleSelectionPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 14.0),
-
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(title: "Login"),
-                        ),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.pill)),
-                    ),
-                    child: const Text("Login"),
-                  ),
-                ],
-              ),
+      body: SafeArea(
+        child: PageBody(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+          children: [
+            Text("Alongside", style: AppText.heading(p.accentText)),
+            const SizedBox(height: 28),
+            const RouteMotif(),
+            const SizedBox(height: 28),
+            Semantics(
+              header: true,
+              child: Text("Someone to go\nwith you", textScaler: AppText.titleScaler(context), style: AppText.title(p.ink).copyWith(fontSize: 36)),
             ),
-          ),
+            const SizedBox(height: 14),
+            Text(
+              "Checked local volunteers help you get to check-ups, scans and lab tests, and pick up your medicine.",
+              style: AppText.body(p.ink),
+            ),
+            const SizedBox(height: 24),
+            const TextSizeControl(),
+            const SizedBox(height: 28),
+            if (returning.isNotEmpty) ...[
+              for (final user in returning.take(3)) ...[
+                PrimaryButton(label: "Continue as ${user.firstName}", onPressed: () => appState.signIn(user)),
+                const SizedBox(height: 12),
+              ],
+              SecondaryButton(
+                label: "I'm someone new",
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RolePage())),
+              ),
+            ] else
+              PrimaryButton(
+                label: "Get started",
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RolePage())),
+              ),
+            const SizedBox(height: 12),
+            SecondaryButton(
+              label: "Look around with sample people",
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RolePage(demo: true))),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// Rounded-arch silhouette (flat sides, semicircular top) used behind the
-/// welcome hero animation.
-class _ArchClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final radius = size.width / 2;
-    final straightHeight = size.height - radius;
-    return Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, straightHeight)
-      ..arcToPoint(Offset(size.width, straightHeight), radius: Radius.circular(radius))
-      ..lineTo(size.width, size.height)
-      ..close();
+/// "Is this easy to read?" with Smaller / Bigger buttons, so the first
+/// thing a senior can change is the size of the words.
+class TextSizeControl extends StatelessWidget {
+  const TextSizeControl({super.key});
+
+  static const steps = [1.0, 1.25, 1.5, 1.75, 2.0];
+
+  static void set(double value) {
+    textScaleNotifier.value = value;
+    saveSetting(KConstants.textScaleKey, value);
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return ValueListenableBuilder(
+      valueListenable: textScaleNotifier,
+      builder: (context, scale, _) {
+        final i = steps.indexWhere((s) => s >= scale - 0.01).clamp(0, steps.length - 1);
+        return Panel(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Is this easy to read?", style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
+              Text("Text size ${(steps[i] * 100).round()}%", style: AppText.secondary(p.muted)),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(backgroundColor: p.ground),
+                    onPressed: i == 0 ? null : () => set(steps[i - 1]),
+                    icon: const Icon(Icons.text_decrease_rounded),
+                    label: const Text("Smaller"),
+                  ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(backgroundColor: p.ground),
+                    onPressed: i == steps.length - 1 ? null : () => set(steps[i + 1]),
+                    icon: const Icon(Icons.text_increase_rounded),
+                    label: const Text("Bigger"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class RolePage extends StatelessWidget {
+  const RolePage({super.key, this.demo = false});
+
+  /// Picking a role signs straight into that role's sample account.
+  final bool demo;
+
+  static const _roles = [
+    (UserRole.senior, Icons.elderly_rounded, "I need help getting to appointments", "Ask for a volunteer to come with you or pick up your medicine."),
+    (UserRole.volunteer, Icons.volunteer_activism_outlined, "I want to volunteer", "Help an older neighbour get to the doctor. We check everyone first."),
+    (UserRole.family, Icons.family_restroom_rounded, "I'm helping my mum, dad or another relative", "Follow their visits and ask for help on their behalf."),
+  ];
+
+  static const _demoNames = {
+    UserRole.senior: "You'll be Margaret, 79.",
+    UserRole.volunteer: "You'll be Daniel, a volunteer.",
+    UserRole.family: "You'll be Lena, Margaret's daughter.",
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const PageAppBar(),
+      body: PageBody(
+        children: [
+          ScreenTitle(
+            demo ? "Who would you like to be?" : "Who are you?",
+            subtitle: demo ? "Everyone here is a sample person. Nothing leaves this phone." : null,
+          ),
+          const SizedBox(height: 24),
+          for (final (role, icon, title, subtitle) in _roles) ...[
+            ChoiceTile(
+              icon: icon,
+              title: title,
+              subtitle: demo ? "${_demoNames[role]} $subtitle" : subtitle,
+              selected: false,
+              navigates: true,
+              onTap: () async {
+                if (demo) {
+                  await appState.signInDemo(role);
+                  if (context.mounted) Navigator.popUntil(context, (r) => r.isFirst);
+                } else {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => SignUpPage(role: role)));
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key, required this.role});
+
+  final UserRole role;
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _name = TextEditingController();
+  final _phone = TextEditingController();
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    await appState.createAccount(name: _name.text.trim(), role: widget.role, phone: _phone.text.trim());
+    if (mounted) Navigator.popUntil(context, (r) => r.isFirst);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final volunteer = widget.role == UserRole.volunteer;
+    return Scaffold(
+      appBar: const PageAppBar(),
+      body: Form(
+        key: _formKey,
+        child: PageBody(
+          children: [
+            const ScreenTitle("A little about you"),
+            const SizedBox(height: 24),
+            TextFormField(
+              controller: _name,
+              textCapitalization: TextCapitalization.words,
+              autofillHints: const [AutofillHints.name],
+              style: AppText.body(p.ink),
+              decoration: const InputDecoration(labelText: "Your full name"),
+              validator: (v) => (v == null || v.trim().length < 2) ? "Please write your name" : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _phone,
+              keyboardType: TextInputType.phone,
+              autofillHints: const [AutofillHints.telephoneNumber],
+              style: AppText.body(p.ink),
+              decoration: const InputDecoration(labelText: "Your phone number"),
+              validator: (v) => (v == null || v.replaceAll(RegExp(r'[^0-9]'), '').length < 7) ? "Please write a phone number we can call" : null,
+            ),
+            const SizedBox(height: 20),
+            if (volunteer)
+              Panel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Before you see anyone's request", style: AppText.section(p.ink)),
+                    const SizedBox(height: 6),
+                    Text(
+                      "We check your ID, run a background check, call two references, and you take a short safety course. "
+                      "To give rides, we also check your car insurance. Until then, requests stay hidden.",
+                      style: AppText.secondary(p.ink),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Text("We'll only share your number with the volunteer who says yes to your request.", style: AppText.secondary(p.muted)),
+            const SizedBox(height: 28),
+            PrimaryButton(label: "Create my account", onPressed: _submit),
+          ],
+        ),
+      ),
+    );
+  }
 }
