@@ -5,3 +5,8 @@ build/
 ios/Pods/
 ios/.symlinks/
 android/.gradle/
+
+# Local Claude Code / agent skills tooling
+.agents/
+.claude/
+skills-lock.json

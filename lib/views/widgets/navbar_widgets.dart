@@ -1,11 +1,17 @@
-// Save this to: lib/views/widgets/navbar_widgets.dart (replaces existing file)
-
 import 'package:flutter/material.dart';
 import 'package:flutter_app/data/constants.dart';
 import 'package:flutter_app/data/notifiers.dart';
 
+class NavItem {
+  const NavItem({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
+}
+
 class NavbarWidget extends StatelessWidget {
-  const NavbarWidget({super.key});
+  const NavbarWidget({super.key, required this.items});
+
+  final List<NavItem> items;
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +49,13 @@ class NavbarWidget extends StatelessWidget {
               backgroundColor: Colors.transparent,
               elevation: 0,
               height: 60,
-              destinations: const [
-                NavigationDestination(icon: Icon(Icons.home_rounded), label: "Home"),
-                NavigationDestination(icon: Icon(Icons.person_rounded), label: "Profile"),
+              destinations: [
+                for (final item in items) NavigationDestination(icon: Icon(item.icon), label: item.label),
               ],
               onDestinationSelected: (int value) {
                 selectedPageNotifier.value = value;
               },
-              selectedIndex: selectedPage,
+              selectedIndex: selectedPage.clamp(0, items.length - 1),
             ),
           ),
         );

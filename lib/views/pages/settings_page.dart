@@ -1,8 +1,8 @@
-// Save this to: lib/views/pages/settings_page.dart (replaces existing file)
-
 import 'package:flutter/material.dart';
+import 'package:flutter_app/data/app_state.dart';
 import 'package:flutter_app/data/constants.dart';
 import 'package:flutter_app/data/notifiers.dart';
+import 'package:flutter_app/views/pages/welcome_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -15,14 +15,28 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool medicationReminders = true;
-  bool appointmentReminders = true;
-  double textSizeScale = 1.0;
-
   void _toggleDarkMode(bool value) async {
     isDarkModeNotifier.value = value;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(KConstants.ThemeModeKey, value);
+  }
+
+  void _setTextScale(double value) async {
+    textScaleNotifier.value = value;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(KConstants.TextScaleKey, value);
+  }
+
+  void _toggleMedicationReminders(bool value) async {
+    medicationRemindersNotifier.value = value;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(KConstants.MedicationRemindersKey, value);
+  }
+
+  void _toggleAppointmentReminders(bool value) async {
+    appointmentRemindersNotifier.value = value;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(KConstants.AppointmentRemindersKey, value);
   }
 
   @override
@@ -72,19 +86,22 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Slider(
-                      value: textSizeScale,
-                      min: 0.8,
-                      max: 1.6,
-                      divisions: 4,
-                      activeColor: AppColors.tealStart,
-                      label: "${(textSizeScale * 100).round()}%",
-                      onChanged: (value) {
-                        setState(() => textSizeScale = value);
-                      },
-                    ),
+                  ValueListenableBuilder(
+                    valueListenable: textScaleNotifier,
+                    builder: (context, textScale, child) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Slider(
+                          value: textScale,
+                          min: 0.8,
+                          max: 1.6,
+                          divisions: 4,
+                          activeColor: AppColors.tealStart,
+                          label: "${(textScale * 100).round()}%",
+                          onChanged: _setTextScale,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -93,22 +110,24 @@ class _SettingsPageState extends State<SettingsPage> {
               const _SettingsSectionTitle(title: "Notifications"),
               _SettingsGroup(
                 children: [
-                  _SettingsSwitchTile(
-                    icon: Icons.medication_liquid,
-                    title: "Medication Reminders",
-                    value: medicationReminders,
-                    onChanged: (value) {
-                      setState(() => medicationReminders = value);
-                    },
+                  ValueListenableBuilder(
+                    valueListenable: medicationRemindersNotifier,
+                    builder: (context, value, child) => _SettingsSwitchTile(
+                      icon: Icons.medication_liquid,
+                      title: "Medication Reminders",
+                      value: value,
+                      onChanged: _toggleMedicationReminders,
+                    ),
                   ),
                   _SettingsDivider(),
-                  _SettingsSwitchTile(
-                    icon: Icons.calendar_month,
-                    title: "Appointment Reminders",
-                    value: appointmentReminders,
-                    onChanged: (value) {
-                      setState(() => appointmentReminders = value);
-                    },
+                  ValueListenableBuilder(
+                    valueListenable: appointmentRemindersNotifier,
+                    builder: (context, value, child) => _SettingsSwitchTile(
+                      icon: Icons.calendar_month,
+                      title: "Appointment Reminders",
+                      value: value,
+                      onChanged: _toggleAppointmentReminders,
+                    ),
                   ),
                 ],
               ),
@@ -120,7 +139,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _SettingsActionTile(
                     icon: Icons.help_outline,
                     title: "Help & FAQ",
-                    onTap: () {},
+                    onTap: () => _showHelpDialog(context),
                   ),
                   _SettingsDivider(),
                   _SettingsActionTile(
@@ -128,11 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: "Send Feedback",
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Thanks! We'll be in touch."),
-                          behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                        ),
+                        const SnackBar(content: Text("Thanks! We'll be in touch.")),
                       );
                     },
                   ),
@@ -145,9 +160,6 @@ class _SettingsPageState extends State<SettingsPage> {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
                             title: const Text("Senior App"),
                             content: const Text(
                               "Helping families stay connected and on top of care, "
@@ -155,12 +167,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             actions: [
                               FilledButton(
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppColors.tealStart,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
+                                style: FilledButton.styleFrom(backgroundColor: AppColors.tealStart),
                                 onPressed: () => Navigator.pop(context),
                                 child: const Text("Close"),
                               ),
@@ -182,7 +189,15 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: "Log Out",
                     titleColor: AppColors.emergencyRed,
                     iconColor: AppColors.emergencyRed,
-                    onTap: () => Navigator.pop(context),
+                    onTap: () async {
+                      await appState.logout();
+                      if (!context.mounted) return;
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => const WelcomePage()),
+                        (route) => false,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -190,6 +205,64 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showHelpDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Help & FAQ"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              _FaqItem(
+                question: "How do I request help?",
+                answer:
+                    "From the Home tab, tap \"Request Help\", choose what you need, "
+                    "where, and when — then post it. A companion nearby can accept it.",
+              ),
+              SizedBox(height: 14),
+              _FaqItem(
+                question: "How do I set my emergency contact?",
+                answer: "Open the Profile tab and tap the Emergency Contact tile to add or edit it.",
+              ),
+              SizedBox(height: 14),
+              _FaqItem(
+                question: "Can I cancel a request?",
+                answer: "Yes — open the request from \"My Requests\" and tap Cancel, any time before it's completed.",
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.tealStart),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Got it"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FaqItem extends StatelessWidget {
+  const _FaqItem({required this.question, required this.answer});
+  final String question;
+  final String answer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(question, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
+        const SizedBox(height: 4),
+        Text(answer, style: const TextStyle(color: AppColors.textGrey, height: 1.3)),
+      ],
     );
   }
 }
@@ -224,7 +297,7 @@ class _SettingsGroup extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         boxShadow: AppColors.softShadow,
       ),
       child: Column(children: children),

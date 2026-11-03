@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/data/notifiers.dart';
+import 'package:flutter_app/data/app_state.dart';
+import 'package:flutter_app/data/constants.dart';
+import 'package:flutter_app/data/models.dart';
 import 'package:flutter_app/views/pages/welcome_page.dart';
+import 'package:flutter_app/views/widgets/app_widgets.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -10,14 +13,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String name = 'Your Name';
-  String age = 'Age';
-  String appointment = 'Appointment';
-  String phone = 'Phone Number';
-  String address = 'Address';
-  String doctor = 'Doctor Name';
-  String emergency = 'Emergency Contact';
-
   void _editField(String label, String current, Function(String) onSave) {
     final controller = TextEditingController(text: current);
 
@@ -25,15 +20,16 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Edit $label'),
-        content: TextField(controller: controller),
+        content: TextField(controller: controller, autofocus: true),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.tealStart),
             onPressed: () {
-              setState(() => onSave(controller.text));
+              onSave(controller.text);
               Navigator.pop(context);
             },
             child: const Text('Save'),
@@ -47,49 +43,30 @@ class _ProfilePageState extends State<ProfilePage> {
     String label,
     String value,
     IconData icon,
-    Function(String) onSave, {
-    Color tileColor = Colors.white,
-    Color iconColor = Colors.lightBlue,
+    Function(String)? onSave, {
+    Color iconColor = AppColors.tealStart,
   }) {
     return GestureDetector(
-      onTap: () => _editField(label, value, onSave),
-      child: Container(
-        decoration: BoxDecoration(
-          color: tileColor,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(18),
+      onTap: onSave == null ? null : () => _editField(label, value, onSave),
+      child: SoftCard(
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 38, color: iconColor),
-            const SizedBox(height: 8),
-
+            Icon(icon, size: 34, color: iconColor),
+            const SizedBox(height: 10),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 13, color: AppColors.textGrey),
+              textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 4),
-
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -99,90 +76,144 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.grey[100],
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            const CircleAvatar(
-              radius: 42,
-              backgroundColor: Colors.white,
-              child: Icon(
-                Icons.person,
-                size: 48,
-                color: Colors.lightBlue,
-              ),
-            ),
+    return ValueListenableBuilder(
+      valueListenable: appState.currentUser,
+      builder: (context, user, child) {
+        if (user == null) return const SizedBox.shrink();
 
-            const SizedBox(height: 10),
-
-            GestureDetector(
-              onTap: () =>
-                  _editField('Name', name, (v) => setState(() => name = v)),
-              child: Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Expanded(
-              child: ListView(
+        return Container(
+          decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+              child: Column(
                 children: [
-                  _profileTile(
-                    'Age',
-                    age,
-                    Icons.cake,
-                    (v) => setState(() => age = v),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: AppColors.primaryGradient,
+                    ),
+                    child: const CircleAvatar(
+                      radius: 42,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person, size: 48, color: AppColors.tealStart),
+                    ),
                   ),
+                  const SizedBox(height: 12),
 
-                  const SizedBox(height: 15),
-
-                  _profileTile(
-                    'Doctor',
-                    doctor,
-                    Icons.local_hospital,
-                    (v) => setState(() => doctor = v),
+                  GestureDetector(
+                    onTap: () => _editField(
+                      'Name',
+                      user.name,
+                      (v) => appState.updateCurrentUser((u) => u.copyWith(name: v)),
+                    ),
+                    child: Text(
+                      user.name,
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                    ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user.role == UserRole.senior ? "Senior" : "Companion",
+                    style: const TextStyle(fontSize: 14, color: AppColors.textGrey),
+                  ),
+                  const SizedBox(height: 20),
 
-                  const SizedBox(height: 15),
+                  Expanded(
+                    child: GridView.count(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 14,
+                      crossAxisSpacing: 14,
+                      childAspectRatio: 1.05,
+                      children: user.role == UserRole.senior ? _seniorTiles(user) : _companionTiles(user),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
-                  _profileTile(
-                    'Emergency Contact',
-                    emergency,
-                    Icons.emergency,
-                    (v) => setState(() => emergency = v),
-                    tileColor: Colors.red.shade50,
-                    iconColor: Colors.red,
+                  SoftCard(
+                    padding: EdgeInsets.zero,
+                    child: ListTile(
+                      leading: const Icon(Icons.logout, color: AppColors.emergencyRed),
+                      title: const Text('Log out', style: TextStyle(color: AppColors.emergencyRed, fontWeight: FontWeight.bold)),
+                      onTap: () async {
+                        await appState.logout();
+                        if (!context.mounted) return;
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const WelcomePage()),
+                          (route) => false,
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
-
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text(
-                'Log out',
-                style: TextStyle(color: Colors.red),
-              ),
-              onTap: () {
-                selectedPageNotifier.value = 0;
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => WelcomePage(),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
+  }
+
+  List<Widget> _seniorTiles(AppUser user) {
+    return [
+      _profileTile(
+        'Age',
+        user.age?.toString() ?? 'Not set',
+        Icons.cake_outlined,
+        (v) => appState.updateCurrentUser((u) => u.copyWith(age: int.tryParse(v))),
+      ),
+      _profileTile(
+        'Address',
+        user.address ?? 'Not set',
+        Icons.home_outlined,
+        (v) => appState.updateCurrentUser((u) => u.copyWith(address: v)),
+      ),
+      _profileTile(
+        'Emergency Contact',
+        _emergencyContactSummary(user),
+        Icons.emergency_outlined,
+        (v) => appState.updateCurrentUser((u) => u.copyWith(emergencyContactName: v)),
+        iconColor: AppColors.emergencyRed,
+      ),
+      _profileTile(
+        'Medical Notes',
+        user.medicalNotes ?? 'Not set',
+        Icons.local_hospital_outlined,
+        (v) => appState.updateCurrentUser((u) => u.copyWith(medicalNotes: v)),
+      ),
+    ];
+  }
+
+  String _emergencyContactSummary(AppUser user) {
+    final parts = [user.emergencyContactName, user.emergencyContactPhone]
+        .where((e) => e != null && e.isNotEmpty)
+        .toList();
+    return parts.isEmpty ? 'Not set' : parts.join(' · ');
+  }
+
+  List<Widget> _companionTiles(AppUser user) {
+    return [
+      _profileTile(
+        'School / Organization',
+        user.schoolOrOrg ?? 'Not set',
+        Icons.school_outlined,
+        (v) => appState.updateCurrentUser((u) => u.copyWith(schoolOrOrg: v)),
+      ),
+      _profileTile(
+        'Availability',
+        user.availabilityNote ?? 'Not set',
+        Icons.schedule_outlined,
+        (v) => appState.updateCurrentUser((u) => u.copyWith(availabilityNote: v)),
+      ),
+      _profileTile(
+        'Background Check',
+        user.backgroundCheckStatus ?? 'Pending',
+        Icons.verified_user_outlined,
+        null, // read-only: not something the user should freely edit
+        iconColor: AppColors.blueAccent,
+      ),
+    ];
   }
 }
