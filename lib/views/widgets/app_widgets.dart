@@ -62,7 +62,7 @@ class PageAppBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           TextButton.icon(
             onPressed: () => Navigator.maybePop(context),
-            icon: const Icon(Icons.arrow_back_rounded),
+            icon: Icon(Icons.arrow_back_rounded, size: AppText.icon(context, 24)),
             label: const Text("Back"),
             style: TextButton.styleFrom(foregroundColor: context.palette.ink),
           ),
@@ -175,7 +175,7 @@ class SecondaryButton extends StatelessWidget {
       width: double.infinity,
       child: icon == null
           ? OutlinedButton(onPressed: onPressed, style: style, child: Text(label, textAlign: TextAlign.center))
-          : OutlinedButton.icon(onPressed: onPressed, style: style, icon: Icon(icon, size: 22), label: Text(label, textAlign: TextAlign.center)),
+          : OutlinedButton.icon(onPressed: onPressed, style: style, icon: Icon(icon, size: AppText.icon(context, 22)), label: Text(label, textAlign: TextAlign.center)),
     );
   }
 }
@@ -263,7 +263,7 @@ class VettedBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.verified_user_outlined, size: 20, color: p.accentText),
+        Icon(Icons.verified_user_outlined, size: AppText.icon(context, 20), color: p.accentText),
         const SizedBox(width: 6),
         Flexible(child: Text("Checks passed", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: p.accentText))),
       ],
@@ -347,7 +347,7 @@ class ChoiceTile extends StatelessWidget {
               child: Row(
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, size: 28, color: p.ink),
+                    Icon(icon, size: AppText.icon(context, 28), color: p.ink),
                     const SizedBox(width: 14),
                   ],
                   Expanded(
@@ -362,12 +362,12 @@ class ChoiceTile extends StatelessWidget {
                   const SizedBox(width: 12),
                   ExcludeSemantics(
                     child: navigates
-                        ? Icon(Icons.chevron_right_rounded, size: 30, color: p.muted)
+                        ? Icon(Icons.chevron_right_rounded, size: AppText.icon(context, 30), color: p.muted)
                         : Icon(
                       selected
                           ? (multi ? Icons.check_box_rounded : Icons.check_circle_rounded)
                           : (multi ? Icons.check_box_outline_blank_rounded : Icons.radio_button_unchecked_rounded),
-                      size: 28,
+                      size: AppText.icon(context, 28),
                       color: selected ? p.accent : p.muted,
                           ),
                   ),
@@ -419,7 +419,7 @@ class ChipChoice<T> extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (o == selected) ...[
-                          Icon(Icons.check_rounded, size: 20, color: p.ink),
+                          Icon(Icons.check_rounded, size: AppText.icon(context, 20), color: p.ink),
                           const SizedBox(width: 6),
                         ],
                         Flexible(
@@ -493,7 +493,7 @@ class StarRating extends StatelessWidget {
                     onPressed: () => onChanged!(i),
                     iconSize: size,
                     constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
-                    icon: Icon(i <= value ? Icons.star_rounded : Icons.star_outline_rounded, color: p.star),
+                    icon: Icon(i <= value ? Icons.star_rounded : Icons.star_outline_rounded, color: p.star, size: AppText.icon(context, 24)),
                   ),
                 ),
       ],

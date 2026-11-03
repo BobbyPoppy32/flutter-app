@@ -110,7 +110,7 @@ class VettingList extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(ok ? Icons.check_circle_rounded : Icons.schedule_rounded, color: ok ? p.accent : p.muted, size: 26),
+                  Icon(ok ? Icons.check_circle_rounded : Icons.schedule_rounded, color: ok ? p.accent : p.muted, size: AppText.icon(context, 26)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

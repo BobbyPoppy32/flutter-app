@@ -155,7 +155,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
                   children: [
                     TextButton.icon(
                       onPressed: _back,
-                      icon: const Icon(Icons.arrow_back_rounded),
+                      icon: Icon(Icons.arrow_back_rounded, size: AppText.icon(context, 24)),
                       label: const Text("Back"),
                       style: TextButton.styleFrom(foregroundColor: p.ink),
                     ),
@@ -215,19 +215,24 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.error_outline_rounded, color: p.danger),
+                            Icon(Icons.error_outline_rounded, color: p.danger, size: AppText.icon(context, 24)),
                             const SizedBox(width: 8),
                             Expanded(child: Text(_error!, style: AppText.body(p.danger))),
                           ],
                         ),
                       ),
                     ],
-                    const SizedBox(height: 28),
-                    if (_step < _steps - 1)
-                      PrimaryButton(label: _fromSummary ? "Save and go back to the summary" : "Next", onPressed: _next)
-                    else
-                      PrimaryButton(label: "Send my request", icon: Icons.send_rounded, onPressed: _sending ? null : _send),
                   ],
+                ),
+              ),
+              // Pinned so nobody has to discover that the page scrolls to move on.
+              DecoratedBox(
+                decoration: BoxDecoration(color: p.ground, border: Border(top: BorderSide(color: p.border))),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: _step < _steps - 1
+                      ? PrimaryButton(label: _fromSummary ? "Save and go back to the summary" : "Next", onPressed: _next)
+                      : PrimaryButton(label: "Send my request", icon: Icons.send_rounded, onPressed: _sending ? null : _send),
                 ),
               ),
             ],
@@ -362,7 +367,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
                         ListTile(
                           minTileHeight: 56,
                           title: Text(formatDay(DateUtils.addDaysToDate(today, i), now: _now), style: AppText.body(p.ink)),
-                          trailing: Icon(Icons.chevron_right_rounded, color: p.muted),
+                          trailing: Icon(Icons.chevron_right_rounded, color: p.muted, size: AppText.icon(context, 24)),
                           onTap: () => Navigator.pop(context, DateUtils.addDaysToDate(today, i)),
                         ),
                     ],
@@ -396,7 +401,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.home_outlined, color: p.ink),
+              Icon(Icons.home_outlined, color: p.ink, size: AppText.icon(context, 24)),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -504,7 +509,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
       ),
       const SizedBox(height: 4),
       Text(
-        "Your volunteer will come to your door at about ${formatTime(HelpRequest.doorTimeFor(_type!, _when!))}.",
+        "Your volunteer will come to ${_forSomeoneElse ? "${senior.firstName}'s door" : "your door"} at about ${formatTime(HelpRequest.doorTimeFor(_type!, _when!))}.",
         style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700),
       ),
       const SizedBox(height: 12),
@@ -535,7 +540,7 @@ class _RoundIconButton extends StatelessWidget {
       tooltip: label,
       iconSize: 30,
       style: IconButton.styleFrom(backgroundColor: p.ground, foregroundColor: p.ink, minimumSize: const Size(60, 60)),
-      icon: Icon(icon),
+      icon: Icon(icon, size: AppText.icon(context, 24)),
     );
   }
 }

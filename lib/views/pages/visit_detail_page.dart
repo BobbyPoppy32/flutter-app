@@ -40,7 +40,7 @@ class VisitDetailPage extends StatelessWidget {
               Text(formatWhen(r.when), style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
               InfoLine(icon: Icons.place_outlined, text: [r.placeName, r.address].where((s) => s.isNotEmpty).join(", ")),
               if (r.status.isActive)
-                InfoLine(icon: Icons.door_front_door_outlined, text: "Your volunteer comes to your door at about ${formatTime(r.doorTime)}"),
+                InfoLine(icon: Icons.door_front_door_outlined, text: "Your volunteer comes to ${doorOf(r.seniorId)} at about ${formatTime(r.doorTime)}"),
               if (r.needsBackup(now) || r.isNoShow(now)) ...[const SizedBox(height: 20), AlertPanel(request: r)],
               if (r.status == RequestStatus.open && dropped != null) ...[
                 const SizedBox(height: 20),
@@ -67,7 +67,7 @@ class VisitDetailPage extends StatelessWidget {
                       ),
                       if (r.status.isActive) ...[
                         const SizedBox(height: 16),
-                        DoorCode(code: r.meetingCode, name: volunteer.firstName),
+                        DoorCode(code: r.meetingCode, name: volunteer.firstName, senior: familyView(r.seniorId)),
                         const SizedBox(height: 16),
                         ContactButtons(name: volunteer.firstName, phone: volunteer.phone ?? ""),
                       ],

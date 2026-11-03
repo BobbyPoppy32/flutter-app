@@ -94,13 +94,13 @@ class TextSizeControl extends StatelessWidget {
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(backgroundColor: p.ground),
                     onPressed: i == 0 ? null : () => set(steps[i - 1]),
-                    icon: const Icon(Icons.text_decrease_rounded),
+                    icon: Icon(Icons.text_decrease_rounded, size: AppText.icon(context, 24)),
                     label: const Text("Smaller"),
                   ),
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(backgroundColor: p.ground),
                     onPressed: i == steps.length - 1 ? null : () => set(steps[i + 1]),
-                    icon: const Icon(Icons.text_increase_rounded),
+                    icon: Icon(Icons.text_increase_rounded, size: AppText.icon(context, 24)),
                     label: const Text("Bigger"),
                   ),
                 ],

@@ -261,6 +261,15 @@ The verdict and the reviews were run with the bundled agents, each given its fil
 - Models: the old `companion` role became `volunteer`, and the old help types (house care, quality food) are out of scope.
 - `.claude/` is removed from the branch (`git rm -r --cached .claude`). It stays gitignored, along with `.court/` and `.taste-skill/`.
 
+### After the live walkthrough
+
+Four problems found while tapping through the app in the simulator, now fixed:
+
+- **Family wording.** Lena used to read "comes to your door" and "Daniel will show you this number" about Margaret's door. These lines now name the senior when family is looking (`familyView` and `doorOf` in `format.dart`). A widget test covers it.
+- **Next button.** It is now pinned to the bottom of each request step. Before, it sat under the list on step 1, and you had to scroll to find it.
+- **Icons at large text.** Button, tile, card and chevron icons now grow with the text, capped at 1.5x like titles. Before, they stayed small at 200%.
+- **Needs.** On a request, a volunteer now sees the needs from the request and from the senior's profile together. Before, "No mobility needs listed" could sit next to "Margaret is hard of hearing".
+
 ## Decisions I made on my own
 
 - **Name:** "Alongside", from "someone to come along with me". The iOS display name is changed; the bundle id is left as `com.example.flutterApp`.

@@ -29,6 +29,9 @@ class VolunteerRequestPage extends StatelessWidget {
           final r = appState.requestById(requestId)!;
           final senior = appState.userById(r.seniorId)!;
           final mine = r.volunteerId == me.id;
+          // The request's needs plus the ones on the senior's profile, so
+          // "Good to know" and the hard-of-hearing hint never disagree.
+          final needs = {...r.needs, ...senior.needs};
 
           return PageBody(
             children: [
@@ -65,7 +68,7 @@ class VolunteerRequestPage extends StatelessWidget {
                       ],
                     ),
                     if (mine && r.status.isActive) ...[
-                      if (senior.needs.contains(MobilityNeed.hearing)) ...[
+                      if (needs.contains(MobilityNeed.hearing)) ...[
                         const SizedBox(height: 14),
                         Text("${senior.firstName} is hard of hearing. Send a message before you call.", style: AppText.secondary(p.ink)),
                       ],
@@ -74,7 +77,7 @@ class VolunteerRequestPage extends StatelessWidget {
                         ContactButtons(
                           name: senior.firstName,
                           phone: senior.phone!,
-                          preferText: senior.needs.contains(MobilityNeed.hearing),
+                          preferText: needs.contains(MobilityNeed.hearing),
                         ),
                       ],
                     ],
@@ -96,8 +99,8 @@ class VolunteerRequestPage extends StatelessWidget {
               ],
               const SizedBox(height: 28),
               const SectionHeading("Good to know"),
-              for (final n in r.needs) InfoLine(icon: Icons.check_rounded, text: n.label),
-              if (r.needs.isEmpty) Text("No mobility needs listed.", style: AppText.secondary(p.muted)),
+              for (final n in needs) InfoLine(icon: Icons.check_rounded, text: n.label),
+              if (needs.isEmpty) Text("No mobility needs listed.", style: AppText.secondary(p.muted)),
               if (mine) ...[
                 InfoLine(icon: Icons.place_outlined, text: [r.placeName, r.address].where((s) => s.isNotEmpty).join(", ")),
                 if (r.notes != null) InfoLine(icon: Icons.notes_rounded, text: "“${r.notes}”"),

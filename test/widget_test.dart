@@ -5,6 +5,7 @@ import 'package:flutter_app/data/models.dart';
 import 'package:flutter_app/main.dart';
 import 'package:flutter_app/views/pages/find_requests_page.dart';
 import 'package:flutter_app/views/pages/request_flow_page.dart';
+import 'package:flutter_app/views/pages/visit_detail_page.dart';
 import 'package:flutter_app/views/pages/visits_page.dart';
 import 'package:flutter_app/views/pages/volunteer_request_page.dart';
 import 'package:flutter_app/views/widgets/format.dart';
@@ -264,5 +265,16 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('turned off sharing'), findsOneWidget);
     expect(find.text('Blood or lab test'), findsNothing);
+  });
+
+  testWidgets('family reads "Margaret\'s door", not "your door"', (tester) async {
+    usePhone(tester);
+    await appState.signInDemo(UserRole.family);
+    final visit = appState.requests.value.firstWhere((r) => r.seniorId == 'demo-senior' && r.status == RequestStatus.matched);
+    await tester.pumpWidget(wrap(VisitDetailPage(requestId: visit.id)));
+    await tester.pumpAndSettle();
+    expect(find.textContaining("Margaret's door"), findsWidgets);
+    expect(find.textContaining('your door'), findsNothing);
+    expect(find.textContaining('will show Margaret this number'), findsOneWidget);
   });
 }

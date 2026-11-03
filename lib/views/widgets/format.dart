@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/data/app_state.dart';
 import 'package:flutter_app/data/models.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const _months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const _days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+/// The senior's first name when family is looking, or null when it's the
+/// senior themselves, so copy can say "Margaret's door" or "your door".
+String? familyView(String seniorId) =>
+    appState.currentUser.value?.id == seniorId ? null : appState.userById(seniorId)?.firstName ?? "their";
+
+/// "your door" for the senior, "Margaret's door" for their family.
+String doorOf(String seniorId) => switch (familyView(seniorId)) { null => "your door", final n => "$n's door" };
 
 /// "9:40 am" — lower-case am/pm reads as a word, not a code.
 String formatTime(DateTime d) {

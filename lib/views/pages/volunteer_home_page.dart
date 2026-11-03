@@ -87,7 +87,7 @@ class VolunteerHomePage extends StatelessWidget {
                       style: AppText.section(p.ink),
                     ),
                   ),
-                  Icon(Icons.chevron_right_rounded, color: p.ink, size: 28),
+                  Icon(Icons.chevron_right_rounded, color: p.ink, size: AppText.icon(context, 28)),
                 ],
               ),
             ),

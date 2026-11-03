@@ -118,7 +118,7 @@ class AlertPanel extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.error_outline_rounded, color: p.open.ink, size: 28),
+              Icon(Icons.error_outline_rounded, color: p.open.ink, size: AppText.icon(context, 28)),
               const SizedBox(width: 10),
               Expanded(child: Semantics(header: true, child: Text(title, style: AppText.section(p.open.ink)))),
             ],
@@ -172,11 +172,11 @@ class NextVisitPanel extends StatelessWidget {
           Text(formatWhen(r.when), style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
           InfoLine(icon: Icons.place_outlined, text: "${r.placeName}, ${r.address}"),
           if (volunteer != null) ...[
-            InfoLine(icon: Icons.door_front_door_outlined, text: "${volunteer.firstName} comes to your door at about ${formatTime(r.doorTime)}", strong: true),
+            InfoLine(icon: Icons.door_front_door_outlined, text: "${volunteer.firstName} comes to ${doorOf(r.seniorId)} at about ${formatTime(r.doorTime)}", strong: true),
             const SizedBox(height: 18),
             VolunteerRow(volunteer: volunteer),
             const SizedBox(height: 16),
-            DoorCode(code: r.meetingCode, name: volunteer.firstName),
+            DoorCode(code: r.meetingCode, name: volunteer.firstName, senior: familyView(r.seniorId)),
             const SizedBox(height: 16),
             ContactButtons(name: volunteer.firstName, phone: volunteer.phone ?? ""),
           ] else ...[
@@ -196,19 +196,24 @@ class NextVisitPanel extends StatelessWidget {
 
 /// Four digits the volunteer shows at the door.
 class DoorCode extends StatelessWidget {
-  const DoorCode({super.key, required this.code, required this.name});
+  const DoorCode({super.key, required this.code, required this.name, this.senior});
 
   final String code;
   final String name;
+  // Set when family is looking: the senior is the one at the door.
+  final String? senior;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final check = senior == null
+        ? "$name will show you this number. If it doesn't match, don't open the door."
+        : "$name will show $senior this number. If it doesn't match, $senior shouldn't open the door.";
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: p.ground, borderRadius: BorderRadius.circular(AppRadius.row)),
       child: Semantics(
-        label: "Door code ${code.split('').join(' ')}. $name will show you this number. If it doesn't match, don't open the door.",
+        label: "Door code ${code.split('').join(' ')}. $check",
         excludeSemantics: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +225,7 @@ class DoorCode extends StatelessWidget {
               style: AppText.title(p.ink).copyWith(fontSize: 34, fontFeatures: const [FontFeature.tabularFigures()]),
             ),
             const SizedBox(height: 4),
-            Text("$name will show you this number. If it doesn't match, don't open the door.", style: AppText.secondary(p.ink)),
+            Text(check, style: AppText.secondary(p.ink)),
           ],
         ),
       ),
@@ -257,7 +262,7 @@ class VolunteerRow extends StatelessWidget {
             ],
           ),
         ),
-        if (onTap != null) Icon(Icons.chevron_right_rounded, color: p.muted, size: 28),
+        if (onTap != null) Icon(Icons.chevron_right_rounded, color: p.muted, size: AppText.icon(context, 28)),
       ],
     );
     return onTap == null

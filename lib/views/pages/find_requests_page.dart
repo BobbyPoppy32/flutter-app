@@ -84,7 +84,7 @@ class _FindRequestsPageState extends State<FindRequestsPage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(padding: const EdgeInsets.only(top: 2), child: Icon(Icons.tune_rounded, color: p.ink)),
+                      Padding(padding: const EdgeInsets.only(top: 2), child: Icon(Icons.tune_rounded, color: p.ink, size: AppText.icon(context, 24))),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -209,10 +209,10 @@ class _OpenRequestCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(padding: const EdgeInsets.only(top: 2), child: Icon(iconFor(r.type), size: 26, color: p.ink)),
+              Padding(padding: const EdgeInsets.only(top: 2), child: Icon(iconFor(r.type), size: AppText.icon(context, 26), color: p.ink)),
               const SizedBox(width: 12),
               Expanded(child: Text(r.type.label, style: AppText.section(p.ink))),
-              Icon(Icons.chevron_right_rounded, color: p.muted, size: 28),
+              Icon(Icons.chevron_right_rounded, color: p.muted, size: AppText.icon(context, 28)),
             ],
           ),
           const SizedBox(height: 4),

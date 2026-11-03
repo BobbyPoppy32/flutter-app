@@ -23,7 +23,7 @@ class JourneyTimeline extends StatelessWidget {
     final who = forVolunteer ? "You" : volunteerName ?? "Your volunteer";
     final senior = appState.userById(r.seniorId)?.firstName ?? "They";
     final steps = [
-      (forVolunteer ? "$senior asked for help" : "You asked for help", formatWhen(r.createdAt)),
+      (forVolunteer || familyView(r.seniorId) != null ? "$senior asked for help" : "You asked for help", formatWhen(r.createdAt)),
       (
         r.volunteerId == null ? "Finding a volunteer" : "$who said yes",
         r.volunteerId == null
@@ -35,7 +35,7 @@ class JourneyTimeline extends StatelessWidget {
                     : "",
       ),
       (
-        forVolunteer ? "At $senior's door" : "$who at your door",
+        forVolunteer ? "At $senior's door" : "$who at ${doorOf(r.seniorId)}",
         r.checkedInAt != null ? "Arrived at ${formatTime(r.checkedInAt!)}" : "Planned for ${formatWhen(r.doorTime)}",
       ),
       ("Visit done", r.completedAt != null ? formatWhen(r.completedAt!) : ""),
@@ -176,10 +176,10 @@ class VisitCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(padding: const EdgeInsets.only(top: 2), child: Icon(iconFor(r.type), size: 26, color: p.ink)),
+              Padding(padding: const EdgeInsets.only(top: 2), child: Icon(iconFor(r.type), size: AppText.icon(context, 26), color: p.ink)),
               const SizedBox(width: 12),
               Expanded(child: Text(r.type.label, style: AppText.section(p.ink))),
-              Icon(Icons.chevron_right_rounded, color: p.muted, size: 28),
+              Icon(Icons.chevron_right_rounded, color: p.muted, size: AppText.icon(context, 28)),
             ],
           ),
           const SizedBox(height: 4),
