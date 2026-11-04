@@ -1,10 +1,50 @@
-# Alongside: overnight changes
+# Alongside: changes
 
 The app used to be "Senior App". It is now **Alongside**: checked local volunteers who help older people get to doctor's check-ups, scans and X-rays, and blood or lab tests, pick up their medicine, give rides to appointments, or simply come along. Three roles share one device-local world, seeded so that every screen has something on it the first time it opens:
 
 - **Senior:** Margaret Chu, 79, uses a walker and is hard of hearing.
 - **Volunteer:** Daniel Okafor, a retired school librarian with a car.
 - **Family:** Lena Chu, Margaret's daughter.
+
+## November 2026: new identity ("Harbour Ink")
+
+The app was restyled to feel like a paid, professional product while staying easy for older eyes. This replaces the teal look described in the older sections below; where they disagree, this section is current. The lock is `.tastemaker/style-lock.md`.
+
+**How it was made.** A UX researcher brief and a brand platform (both role agents, from the court verdicts and screenshots), ui-ux-pro-max for type and palette data, then one checkpoint with the owner: logo, palette and fonts were picked from a rendered sheet (`tool/identity_sheet_test.dart`). After the build, a UI designer, an accessibility auditor and a persona walkthrough reviewed fresh simulator screenshots, and their findings were fixed.
+
+**Logo: "Leaning A".** A tall stroke rises and leans in, a shorter one leans against it, and a dot is the crossbar: two people walking together, and the A of Alongside. One painter (`AlongsideMarkPainter` in `lib/views/widgets/brand.dart`) draws the in-app logo, the app icon and the launch screen. `flutter test tool/render_brand_test.dart && tool/make_icons.sh` regenerates every iOS and Android icon and launch image from it.
+
+**Palette.** Navy `#1F3A5F` on warm linen `#F6F1E8`, ink `#1B2230`, apricot `#E8A25A` only as a fill behind dark ink, warm charcoal `#16181D` in dark mode, where the action colour becomes a pale harbour blue. Status tones differ by lightness, icon and words, never by hue alone. `test/design_test.dart` checks every pair: body text 7:1, other text 4.5:1, outlines 3:1, light and dark. That test found two old colours just under AA, fixed first.
+
+**Type.** Literata for greetings, titles, the door code and the wordmark; Atkinson Hyperlegible Next (400/600/700) for everything else. Both are OFL, cut to fixed weights from Google's variable fonts with fontTools and bundled, so the app works offline. Fraunces and the old Atkinson are gone.
+
+**Feel.**
+- Tokens for spacing (`AppSpace`) and motion (`AppMotion`: 150/240/420 ms, ease-out, no bounce, zero with Reduce Motion).
+- iOS-style page slides, a soft press tint instead of the Android ripple, a theme that fades between light and dark.
+- Selections animate and give a light haptic tick; one success tap on a sent request, a yes and a finished visit.
+- Cards are near-white on linen with a hairline edge; icons sit on soft round tiles; one visit-card layout everywhere.
+- Welcome: logo, the redrawn route (no medical cross), a big headline, the text-size check above the fold, and pinned buttons that scroll instead when space is tight.
+- Senior home leads with good news, the next visit has a date tile, and the door code uses fixed-width digits.
+- The request flow's steps settle in with a short fade, the progress bar fills, and the sent page draws a ring and a tick.
+
+**Fixes found along the way.**
+- "For Margaret" was cut off at 200% text; it now sits on the step line.
+- Family saw "A visit to your doctor"; help types now name the senior when family asks.
+- "Planned for Tomorrow" had a capital mid-sentence.
+- Reduce Motion was read once at start; it is now followed live.
+- The backup deadline could read "by tomorrow at 1:14 am"; it is now a quarter hour and never at night.
+- Daniel's greeting and his card showed different times; the card now leads with the door time.
+- The Settings text-size preview named a wrong day.
+- "X-ray" broke across lines at the hyphen.
+- Success messages vanished after 8 seconds even with VoiceOver on.
+
+**Decisions.**
+- The slashed zero in times ("10:00") is kept: it is how Atkinson Hyperlegible tells 0 from O, and the font has no plain-zero alternate.
+- "I can't make it" is a red link rather than a big button, so it can be found but never competes with the main action.
+- Role and visit icons stay Material icons on round tiles; a drawn icon set is a possible next step.
+- The app icon is the classic set of sizes, not the newer single 1024 icon with dark and tinted variants, which needs a newer Xcode setup.
+
+**Not done.** "How will you get there?" for every appointment type (the persona review's top idea for Margaret), more backup options for Lena, photos for volunteers, and a VoiceOver pass on a real device.
 
 ## How to run it
 
