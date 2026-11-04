@@ -4,6 +4,7 @@ import 'package:flutter_app/data/constants.dart';
 import 'package:flutter_app/data/models.dart';
 import 'package:flutter_app/data/notifiers.dart';
 import 'package:flutter_app/views/widgets/app_widgets.dart';
+import 'package:flutter_app/views/widgets/brand.dart';
 import 'package:flutter_app/views/widgets/visit_widgets.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -13,48 +14,76 @@ class WelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final returning = appState.ownAccounts;
+    void open(bool demo) => Navigator.push(context, MaterialPageRoute(builder: (_) => RolePage(demo: demo)));
     return Scaffold(
       body: SafeArea(
-        child: PageBody(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
           children: [
-            Text("Alongside", style: AppText.heading(p.accentText)),
-            const SizedBox(height: 28),
-            const RouteMotif(),
-            const SizedBox(height: 28),
-            Semantics(
-              header: true,
-              child: Text("Someone to go\nwith you", textScaler: AppText.titleScaler(context), style: AppText.title(p.ink).copyWith(fontSize: 36)),
+            Expanded(
+              child: PageBody(
+                padding: const EdgeInsets.fromLTRB(AppSpace.xxl, AppSpace.l, AppSpace.xxl, AppSpace.xxl),
+                children: [
+                  const Align(alignment: Alignment.centerLeft, child: AlongsideLogo(size: 26)),
+                  const SizedBox(height: AppSpace.l),
+                  const RouteMotif(height: 120),
+                  const SizedBox(height: AppSpace.l),
+                  Semantics(
+                    header: true,
+                    child: Text("Someone to go with you", textScaler: AppText.titleScaler(context), style: AppText.display(p.ink)),
+                  ),
+                  const SizedBox(height: AppSpace.m),
+                  Text(
+                    "Checked local volunteers help you get to check-ups, scans and lab tests, and pick up your medicine.",
+                    style: AppText.body(p.ink),
+                  ),
+                  const SizedBox(height: AppSpace.xl),
+                  // First thing a senior can change: the size of the words.
+                  const TextSizeControl(),
+                  const SizedBox(height: AppSpace.xl),
+                  for (final line in const [
+                    "Every volunteer has their ID and background checked first",
+                    "You see who is coming, and a code they show at your door",
+                  ])
+                    InfoLine(icon: Icons.check_circle_outline_rounded, text: line),
+                ],
+              ),
             ),
-            const SizedBox(height: 14),
-            Text(
-              "Checked local volunteers help you get to check-ups, scans and lab tests, and pick up your medicine.",
-              style: AppText.body(p.ink),
-            ),
-            const SizedBox(height: 24),
-            const TextSizeControl(),
-            const SizedBox(height: 28),
-            if (returning.isNotEmpty) ...[
-              for (final user in returning.take(3)) ...[
-                PrimaryButton(label: "Continue as ${user.firstName}", onPressed: () => appState.signIn(user)),
-                const SizedBox(height: 12),
+            // Pinned, so the way in is on screen even at the largest text.
+            _ActionBar(
+              children: [
+                if (returning.isNotEmpty) ...[
+                  for (final user in returning.take(2)) ...[
+                    PrimaryButton(label: "Continue as ${user.firstName}", onPressed: () => appState.signIn(user)),
+                    const SizedBox(height: AppSpace.s),
+                  ],
+                  SecondaryButton(label: "I'm someone new", onPressed: () => open(false)),
+                ] else
+                  PrimaryButton(label: "Get started", onPressed: () => open(false)),
+                const SizedBox(height: AppSpace.xs),
+                TextButton(onPressed: () => open(true), child: const Text("Look around with sample people")),
               ],
-              SecondaryButton(
-                label: "I'm someone new",
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RolePage())),
-              ),
-            ] else
-              PrimaryButton(
-                label: "Get started",
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RolePage())),
-              ),
-            const SizedBox(height: 12),
-            SecondaryButton(
-              label: "Look around with sample people",
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RolePage(demo: true))),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Buttons kept at the bottom of the screen, above a hairline.
+class _ActionBar extends StatelessWidget {
+  const _ActionBar({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return DecoratedBox(
+      decoration: BoxDecoration(color: p.ground, border: Border(top: BorderSide(color: p.border.withValues(alpha: 0.4)))),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(AppSpace.xxl, AppSpace.m, AppSpace.xxl, AppSpace.s),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
       ),
     );
   }
@@ -120,9 +149,9 @@ class RolePage extends StatelessWidget {
   final bool demo;
 
   static const _roles = [
-    (UserRole.senior, Icons.elderly_rounded, "I need help getting to appointments", "Ask for a volunteer to come with you or pick up your medicine."),
+    (UserRole.senior, Icons.event_available_outlined, "I need help getting to appointments", "Ask for a volunteer to come with you or pick up your medicine."),
     (UserRole.volunteer, Icons.volunteer_activism_outlined, "I want to volunteer", "Help an older neighbour get to the doctor. We check everyone first."),
-    (UserRole.family, Icons.family_restroom_rounded, "I'm helping my mum, dad or another relative", "Follow their visits and ask for help on their behalf."),
+    (UserRole.family, Icons.people_outline_rounded, "I'm helping my mum, dad or another relative", "Follow their visits and ask for help on their behalf."),
   ];
 
   static const _demoNames = {

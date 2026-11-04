@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app/data/app_state.dart';
 import 'package:flutter_app/data/constants.dart';
 import 'package:flutter_app/data/models.dart';
@@ -305,16 +306,35 @@ Future<bool> confirmAction(
 
 /// A short confirmation. Replaces any message still showing, so an old one
 /// never turns up on the next screen.
-void showDone(BuildContext context, String message) => ScaffoldMessenger.of(context)
-  ..hideCurrentSnackBar()
-  // Long enough for a slow reader, and closable by hand.
-  ..showSnackBar(SnackBar(content: Text(message), duration: const Duration(seconds: 8), showCloseIcon: true));
+/// [success] marks the few moments that deserve a gentle tap: a request
+/// sent, a yes, a visit done.
+void showDone(BuildContext context, String message, {bool success = false}) {
+  if (success) HapticFeedback.mediumImpact();
+  final p = context.palette;
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    // Long enough for a slow reader, and closable by hand.
+    ..showSnackBar(SnackBar(
+      content: Row(
+        children: [
+          Icon(Icons.check_circle_rounded, color: p.highlight, size: AppText.icon(context, 24)),
+          const SizedBox(width: AppSpace.m),
+          Expanded(child: Text(message)),
+        ],
+      ),
+      duration: const Duration(seconds: 8),
+      showCloseIcon: true,
+      closeIconColor: p.ground,
+    ));
+}
 
 /// The welcome drawing: home on the left, the clinic on the right, and the
 /// route between them drawn on once. Decorative, so hidden from screen
 /// readers.
 class RouteMotif extends StatefulWidget {
-  const RouteMotif({super.key});
+  const RouteMotif({super.key, this.height = 150});
+
+  final double height;
 
   @override
   State<RouteMotif> createState() => _RouteMotifState();
@@ -344,12 +364,12 @@ class _RouteMotifState extends State<RouteMotif> with SingleTickerProviderStateM
     final p = context.palette;
     return ExcludeSemantics(
       child: SizedBox(
-        height: 150,
+        height: widget.height,
         width: double.infinity,
         child: AnimatedBuilder(
           animation: _c,
           builder: (context, _) =>
-              CustomPaint(painter: _RoutePainter(progress: Curves.easeOutCubic.transform(_c.value), ink: p.ink, accent: p.accent, faint: p.border)),
+              CustomPaint(painter: _RoutePainter(progress: AppMotion.enter.transform(_c.value), ink: p.brand, accent: p.brandSecond, faint: p.border)),
         ),
       ),
     );
@@ -369,7 +389,7 @@ class _RoutePainter extends CustomPainter {
     final line = Paint()
       ..color = ink
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
+      ..strokeWidth = 3
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round;
     final base = size.height - 18;
@@ -390,14 +410,14 @@ class _RoutePainter extends CustomPainter {
     canvas.drawPath(house, line);
     canvas.drawRect(Rect.fromLTWH(hx + hw / 2 - 9, base - 26, 18, 26), line);
 
-    // Clinic: a taller flat-roofed block with a cross.
+    // Clinic: a taller flat-roofed block with two windows. No medical
+    // cross: the brand stays warm, not clinical.
     final cw = 84.0, ch = 84.0, cx = size.width - cw - 8;
-    canvas.drawRect(Rect.fromLTWH(cx, base - ch, cw, ch), line);
-    final mid = Offset(cx + cw / 2, base - ch + 30);
-    canvas.drawLine(mid.translate(-11, 0), mid.translate(11, 0), line..strokeWidth = 4);
-    canvas.drawLine(mid.translate(0, -11), mid.translate(0, 11), line);
-    line.strokeWidth = 2.5;
-    canvas.drawRect(Rect.fromLTWH(cx + cw / 2 - 12, base - 30, 24, 30), line);
+    canvas.drawRRect(RRect.fromLTRBAndCorners(cx, base - ch, cx + cw, base, topLeft: const Radius.circular(6), topRight: const Radius.circular(6)), line);
+    for (final wx in [cx + 16, cx + cw - 34]) {
+      canvas.drawRRect(RRect.fromLTRBR(wx, base - ch + 18, wx + 18, base - ch + 36, const Radius.circular(3)), line);
+    }
+    canvas.drawRRect(RRect.fromLTRBAndCorners(cx + cw / 2 - 12, base - 30, cx + cw / 2 + 12, base, topLeft: const Radius.circular(12), topRight: const Radius.circular(12)), line);
 
     // The route: from the front door, a gentle arc over to the clinic door.
     final start = Offset(hx + hw + 10, base - 6);
@@ -415,9 +435,11 @@ class _RoutePainter extends CustomPainter {
         ..strokeWidth = 4
         ..strokeCap = StrokeCap.round,
     );
-    final dot = metric.getTangentForOffset(metric.length * progress)?.position ?? start;
-    canvas.drawCircle(start, 6, Paint()..color = accent);
-    canvas.drawCircle(dot, 9, Paint()..color = accent);
+    // Two travellers side by side, like the two strokes of the logo.
+    Offset at(double t) => metric.getTangentForOffset(metric.length * t.clamp(0.0, 1.0))?.position ?? start;
+    canvas.drawCircle(start, 5, Paint()..color = accent);
+    canvas.drawCircle(at(progress - 0.07), 8, Paint()..color = ink);
+    canvas.drawCircle(at(progress), 8, Paint()..color = accent);
   }
 
   @override

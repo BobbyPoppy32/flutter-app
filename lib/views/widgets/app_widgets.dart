@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app/data/constants.dart';
 import 'package:flutter_app/data/models.dart';
+import 'package:flutter_app/views/widgets/brand.dart';
 
-/// A tonal surface: one step off the ground, no border, no shadow. The
-/// app's only container; structure comes from tone, not lines.
+/// A card: a lighter surface on the linen ground with a hairline edge, no
+/// shadow. The app's only container.
 class Panel extends StatelessWidget {
   const Panel({super.key, required this.child, this.padding = const EdgeInsets.all(20), this.color, this.onTap, this.semanticLabel});
 
@@ -24,9 +26,19 @@ class Panel extends StatelessWidget {
       label: semanticLabel,
       child: Material(
         color: color ?? p.panel,
-        borderRadius: radius,
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: BorderSide(color: p.border.withValues(alpha: 0.28)),
+        ),
+        clipBehavior: Clip.antiAlias,
         // A tappable card is read as one item, not line by line.
-        child: _OnPanel(child: onTap == null ? body : MergeSemantics(child: InkWell(onTap: onTap, borderRadius: radius, child: body))),
+        child: _OnPanel(
+          child: onTap == null
+              ? body
+              : MergeSemantics(
+                  child: InkWell(onTap: onTap, borderRadius: radius, child: body),
+                ),
+        ),
       ),
     );
   }
@@ -68,7 +80,9 @@ class PageAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           if (title != null) ...[
             const SizedBox(width: 8),
-            Flexible(child: Text(title!, overflow: TextOverflow.ellipsis, style: AppText.secondary(context.palette.muted))),
+            Flexible(
+              child: Text(title!, overflow: TextOverflow.ellipsis, style: AppText.secondary(context.palette.muted)),
+            ),
           ],
         ],
       ),
@@ -76,7 +90,7 @@ class PageAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-/// Screen title in Fraunces, with an optional plain-language line under it.
+/// Screen title in Literata, with an optional plain-language line under it.
 class ScreenTitle extends StatelessWidget {
   const ScreenTitle(this.title, {super.key, this.subtitle});
 
@@ -89,11 +103,11 @@ class ScreenTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Semantics(header: true, child: Text(title, textScaler: AppText.titleScaler(context), style: AppText.title(p.ink))),
-        if (subtitle != null) ...[
-          const SizedBox(height: 8),
-          Text(subtitle!, style: AppText.body(p.muted)),
-        ],
+        Semantics(
+          header: true,
+          child: Text(title, textScaler: AppText.titleScaler(context), style: AppText.title(p.ink)),
+        ),
+        if (subtitle != null) ...[const SizedBox(height: 8), Text(subtitle!, style: AppText.body(p.muted))],
       ],
     );
   }
@@ -114,7 +128,9 @@ class SectionHeading extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Expanded(child: Semantics(header: true, child: Text(text, style: AppText.section(p.ink)))),
+          Expanded(
+            child: Semantics(header: true, child: Text(text, style: AppText.section(p.ink))),
+          ),
           if (action != null) TextButton(onPressed: onAction, child: Text(action!)),
         ],
       ),
@@ -122,7 +138,7 @@ class SectionHeading extends StatelessWidget {
   }
 }
 
-/// The one filled button style. Full width, 60dp tall, flat teal, label in
+/// The one filled button style. Full width, 60dp tall, flat navy, label in
 /// bold. Pass [danger] for the emergency call.
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({super.key, required this.label, required this.onPressed, this.icon, this.danger = false});
@@ -139,7 +155,11 @@ class PrimaryButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: icon == null
-          ? FilledButton(onPressed: onPressed, style: style, child: Text(label, textAlign: TextAlign.center))
+          ? FilledButton(
+              onPressed: onPressed,
+              style: style,
+              child: Text(label, textAlign: TextAlign.center),
+            )
           : FilledButton.icon(
               onPressed: onPressed,
               style: style,
@@ -174,8 +194,17 @@ class SecondaryButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: icon == null
-          ? OutlinedButton(onPressed: onPressed, style: style, child: Text(label, textAlign: TextAlign.center))
-          : OutlinedButton.icon(onPressed: onPressed, style: style, icon: Icon(icon, size: AppText.icon(context, 22)), label: Text(label, textAlign: TextAlign.center)),
+          ? OutlinedButton(
+              onPressed: onPressed,
+              style: style,
+              child: Text(label, textAlign: TextAlign.center),
+            )
+          : OutlinedButton.icon(
+              onPressed: onPressed,
+              style: style,
+              icon: Icon(icon, size: AppText.icon(context, 22)),
+              label: Text(label, textAlign: TextAlign.center),
+            ),
     );
   }
 }
@@ -207,7 +236,7 @@ class StatusPill extends StatelessWidget {
         children: [
           Icon(icon, size: AppText.icon(context, 18), color: tone.ink),
           const SizedBox(width: 6),
-          Flexible(child: Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: tone.ink))),
+          Flexible(child: Text(label, style: AppText.label(tone.ink))),
         ],
       ),
     );
@@ -234,19 +263,11 @@ class Avatar extends StatelessWidget {
         width: size,
         height: size,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: tone.bg,
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle, color: tone.bg),
         child: Text(
           initials,
           textScaler: TextScaler.noScaling,
-          style: TextStyle(
-            fontFamily: AppText.displayFamily,
-            fontWeight: FontWeight.w600,
-            fontSize: size * 0.38,
-            color: tone.ink,
-          ),
+          style: TextStyle(fontFamily: AppText.displayFamily, fontWeight: FontWeight.w600, fontSize: size * 0.38, color: tone.ink),
         ),
       ),
     );
@@ -265,7 +286,7 @@ class VettedBadge extends StatelessWidget {
       children: [
         Icon(Icons.verified_user_outlined, size: AppText.icon(context, 20), color: p.accentText),
         const SizedBox(width: 6),
-        Flexible(child: Text("Checks passed", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: p.accentText))),
+        Flexible(child: Text("Checks passed", style: AppText.label(p.accentText))),
       ],
     );
   }
@@ -287,11 +308,12 @@ class InfoLine extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(padding: const EdgeInsets.only(top: 2), child: Icon(icon, size: AppText.icon(context, 20), color: p.muted)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(text, style: strong ? AppText.body(p.ink) : AppText.secondary(p.ink)),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(icon, size: AppText.icon(context, 20), color: p.muted),
           ),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: strong ? AppText.body(p.ink) : AppText.secondary(p.ink))),
         ],
       ),
     );
@@ -331,47 +353,52 @@ class ChoiceTile extends StatelessWidget {
       checked: multi ? selected : null,
       selected: multi || navigates ? null : selected,
       inMutuallyExclusiveGroup: !multi && !navigates,
-      child: Material(
-        color: selected ? p.accentTint : p.panel,
-        shape: RoundedRectangleBorder(
+      child: AnimatedContainer(
+        duration: AppMotion.of(context, AppMotion.quick),
+        curve: AppMotion.enter,
+        decoration: BoxDecoration(
+          color: selected ? p.accentTint : p.panel,
           borderRadius: radius,
-          side: BorderSide(color: selected ? p.accent : Colors.transparent, width: 2.5),
+          border: Border.all(color: selected ? p.accent : p.border.withValues(alpha: 0.28), width: selected ? 2.5 : 1),
         ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: radius,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 64),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: AppText.icon(context, 28), color: p.ink),
-                    const SizedBox(width: 14),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title, style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
-                        if (subtitle != null) Text(subtitle!, style: AppText.secondary(p.muted)),
-                      ],
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: () {
+              if (!navigates) HapticFeedback.selectionClick();
+              onTap();
+            },
+            borderRadius: radius,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 64),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  children: [
+                    if (icon != null) ...[Icon(icon, size: AppText.icon(context, 28), color: p.ink), const SizedBox(width: 14)],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
+                          if (subtitle != null) Text(subtitle!, style: AppText.secondary(p.muted)),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  ExcludeSemantics(
-                    child: navigates
-                        ? Icon(Icons.chevron_right_rounded, size: AppText.icon(context, 30), color: p.muted)
-                        : Icon(
-                      selected
-                          ? (multi ? Icons.check_box_rounded : Icons.check_circle_rounded)
-                          : (multi ? Icons.check_box_outline_blank_rounded : Icons.radio_button_unchecked_rounded),
-                      size: AppText.icon(context, 28),
-                      color: selected ? p.accent : p.muted,
-                          ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    ExcludeSemantics(
+                      child: navigates
+                          ? Icon(Icons.chevron_right_rounded, size: AppText.icon(context, 30), color: p.muted)
+                          : Icon(
+                              selected
+                                  ? (multi ? Icons.check_box_rounded : Icons.check_circle_rounded)
+                                  : (multi ? Icons.check_box_outline_blank_rounded : Icons.radio_button_unchecked_rounded),
+                              size: AppText.icon(context, 28),
+                              color: selected ? p.accent : p.muted,
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -402,33 +429,44 @@ class ChipChoice<T> extends StatelessWidget {
           Semantics(
             selected: o == selected,
             button: true,
-            child: Material(
-              color: o == selected ? p.accentTint : p.panel,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-                side: o == selected ? BorderSide(color: p.accent, width: 2.5) : BorderSide(color: p.border, width: 1.5),
+            child: AnimatedContainer(
+              duration: AppMotion.of(context, AppMotion.quick),
+              curve: AppMotion.enter,
+              decoration: ShapeDecoration(
+                color: o == selected ? p.accentTint : p.panel,
+                shape: StadiumBorder(
+                  side: o == selected ? BorderSide(color: p.accent, width: 2.5) : BorderSide(color: p.border, width: 1.5),
+                ),
               ),
-              child: InkWell(
-                onTap: () => onSelected(o),
-                customBorder: const StadiumBorder(),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 52, minWidth: 52),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (o == selected) ...[
-                          Icon(Icons.check_rounded, size: AppText.icon(context, 20), color: p.ink),
-                          const SizedBox(width: 6),
-                        ],
-                        Flexible(
-                          child: Text(
-                            label(o),
-                            style: TextStyle(fontSize: 17, fontWeight: o == selected ? FontWeight.w700 : FontWeight.w400, color: p.ink),
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onSelected(o);
+                  },
+                  customBorder: const StadiumBorder(),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 52, minWidth: 52),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (o == selected) ...[
+                            Icon(Icons.check_rounded, size: AppText.icon(context, 20), color: p.ink),
+                            const SizedBox(width: 6),
+                          ],
+                          Flexible(
+                            child: Text(
+                              label(o),
+                              style: AppText.body(
+                                p.ink,
+                              ).copyWith(fontSize: 17, height: 1.3, fontWeight: o == selected ? FontWeight.w700 : FontWeight.w400),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -440,8 +478,8 @@ class ChipChoice<T> extends StatelessWidget {
   }
 }
 
-/// A quiet sentence in a panel for lists with nothing in them, with an
-/// optional next step.
+/// A calm card for lists with nothing in them: the mark, one sentence, and
+/// an optional next step as a real button.
 class EmptyState extends StatelessWidget {
   const EmptyState({super.key, required this.message, this.action, this.onAction});
 
@@ -453,14 +491,14 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Panel(
+      padding: const EdgeInsets.all(AppSpace.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(message, style: AppText.body(p.muted)),
-          if (action != null) ...[
-            const SizedBox(height: 8),
-            TextButton(onPressed: onAction, style: TextButton.styleFrom(padding: EdgeInsets.zero), child: Text(action!)),
-          ],
+          AlongsideMark(size: 36, ground: p.panel),
+          const SizedBox(height: AppSpace.m),
+          Text(message, style: AppText.body(p.ink)),
+          if (action != null) ...[const SizedBox(height: AppSpace.l), SecondaryButton(label: action!, onPressed: onAction)],
         ],
       ),
     );
@@ -490,10 +528,17 @@ class StarRating extends StatelessWidget {
                   selected: i == value,
                   button: true,
                   child: IconButton(
-                    onPressed: () => onChanged!(i),
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      onChanged!(i);
+                    },
                     iconSize: size,
                     constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
-                    icon: Icon(i <= value ? Icons.star_rounded : Icons.star_outline_rounded, color: p.star, size: AppText.icon(context, 24)),
+                    icon: Icon(
+                      i <= value ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: p.star,
+                      size: AppText.icon(context, 24),
+                    ),
                   ),
                 ),
       ],
@@ -531,8 +576,8 @@ class StaggeredEntrance extends StatefulWidget {
 }
 
 class _StaggeredEntranceState extends State<StaggeredEntrance> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 280));
-  late final Animation<double> _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+  late final AnimationController _controller = AnimationController(vsync: this, duration: AppMotion.standard);
+  late final Animation<double> _fade = CurvedAnimation(parent: _controller, curve: AppMotion.enter);
   late final Animation<Offset> _slide = Tween(begin: const Offset(0, 0.04), end: Offset.zero).animate(_fade);
 
   bool _started = false;
@@ -546,7 +591,7 @@ class _StaggeredEntranceState extends State<StaggeredEntrance> with SingleTicker
       _controller.value = 1;
     } else if (!_started) {
       _started = true;
-      Future.delayed(Duration(milliseconds: 50 * widget.index.clamp(0, 6)), () {
+      Future.delayed(Duration(milliseconds: 40 * widget.index.clamp(0, 6)), () {
         if (mounted) _controller.forward();
       });
     }
@@ -559,6 +604,8 @@ class _StaggeredEntranceState extends State<StaggeredEntrance> with SingleTicker
   }
 
   @override
-  Widget build(BuildContext context) =>
-      FadeTransition(opacity: _fade, child: SlideTransition(position: _slide, child: widget.child));
+  Widget build(BuildContext context) => FadeTransition(
+    opacity: _fade,
+    child: SlideTransition(position: _slide, child: widget.child),
+  );
 }

@@ -91,7 +91,7 @@ class VolunteerRequestPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("Door code", style: AppText.secondary(p.muted)),
-                      Text(r.meetingCode.split('').join(' '), textScaler: AppText.titleScaler(context), style: AppText.title(p.ink).copyWith(fontSize: 34)),
+                      Text(r.meetingCode.split('').join(' '), textScaler: AppText.titleScaler(context), style: AppText.code(p.ink)),
                       Text("Show ${senior.firstName} this number when you arrive, so they know it's you.", style: AppText.secondary(p.ink)),
                     ],
                   ),
@@ -166,7 +166,7 @@ class VolunteerActions extends StatelessWidget {
           if (!ok) return;
           final accepted = await appState.accept(r.id, me.id);
           if (!context.mounted) return;
-          showDone(context, accepted ? "You're helping ${senior.firstName}. ${senior.firstName}$family can now see it's you." : "Sorry, this request isn't open to you any more.");
+          showDone(context, accepted ? "You're helping ${senior.firstName}. ${senior.firstName}$family can now see it's you." : "Sorry, this request isn't open to you any more.", success: accepted);
         },
       );
     }
@@ -252,7 +252,7 @@ class VolunteerActions extends StatelessWidget {
     );
     if (note == null) return;
     await appState.complete(r.id, note: note.isEmpty ? null : note);
-    if (context.mounted) showDone(context, "Thank you for helping ${senior.firstName}.");
+    if (context.mounted) showDone(context, "Thank you for helping ${senior.firstName}.", success: true);
   }
 }
 

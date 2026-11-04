@@ -87,7 +87,12 @@ class AlongsideLogo extends StatelessWidget {
         children: [
           AlongsideMark(size: size * 1.35),
           SizedBox(width: size * 0.3),
-          Text("Alongside", textScaler: AppText.titleScaler(context), style: AppText.wordmark(p.brand, size: size)),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text("Alongside", textScaler: AppText.titleScaler(context), style: AppText.wordmark(p.brand, size: size)),
+            ),
+          ),
         ],
       ),
     );

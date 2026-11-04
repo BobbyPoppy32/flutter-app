@@ -118,7 +118,7 @@ class AlertPanel extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.error_outline_rounded, color: p.open.ink, size: AppText.icon(context, 28)),
+              Icon(Icons.schedule_rounded, color: p.open.ink, size: AppText.icon(context, 28)),
               const SizedBox(width: 10),
               Expanded(child: Semantics(header: true, child: Text(title, style: AppText.section(p.open.ink)))),
             ],
@@ -128,21 +128,15 @@ class AlertPanel extends StatelessWidget {
           const SizedBox(height: 16),
           if (noShow && volunteer?.phone != null) ...[
             PrimaryButton(label: "Call ${volunteer!.firstName}", icon: Icons.call_rounded, onPressed: () => contact(context, volunteer.phone!)),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpace.s),
           ],
-          if (backupPhone != null) ...[
-            SecondaryButton(
-              label: "Call ${backupName ?? 'family'}",
-              icon: Icons.call_outlined,
-              onPressed: () => contact(context, backupPhone),
-            ),
-            const SizedBox(height: 10),
-          ] else ...[
+          if (backupPhone != null)
+            SecondaryButton(label: "Call ${backupName ?? 'family'}", icon: Icons.call_outlined, onPressed: () => contact(context, backupPhone))
+          else
             // Someone who lives alone has no family to fall back on yet.
             SecondaryButton(label: "Add someone to call", onPressed: () => selectedPageNotifier.value = 2),
-            const SizedBox(height: 10),
-          ],
-          SecondaryButton(label: "See this visit", onPressed: () => openVisit(context, r)),
+          const SizedBox(height: AppSpace.xs),
+          TextButton(onPressed: () => openVisit(context, r), child: const Text("See this visit")),
         ],
       ),
     );
@@ -161,21 +155,35 @@ class NextVisitPanel extends StatelessWidget {
     final r = request;
     final volunteer = appState.userById(r.volunteerId);
     return Panel(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(AppSpace.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Align(alignment: Alignment.centerLeft, child: StatusPill(r.status)),
-          const SizedBox(height: 14),
-          Text(r.type.label, style: AppText.heading(p.ink)),
-          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DateTile(when: r.when),
+              const SizedBox(width: AppSpace.l),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    StatusPill(r.status),
+                    const SizedBox(height: AppSpace.s),
+                    Text(r.type.label, style: AppText.heading(p.ink)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpace.l),
           Text(formatWhen(r.when), style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
-          InfoLine(icon: Icons.place_outlined, text: "${r.placeName}, ${r.address}"),
+          InfoLine(icon: Icons.place_outlined, text: [r.placeName, r.address].where((s) => s.isNotEmpty).join(", ")),
           if (volunteer != null) ...[
             InfoLine(icon: Icons.door_front_door_outlined, text: "${volunteer.firstName} comes to ${doorOf(r.seniorId)} at about ${formatTime(r.doorTime)}", strong: true),
-            const SizedBox(height: 18),
+            Padding(padding: const EdgeInsets.symmetric(vertical: AppSpace.l), child: Divider(color: p.border.withValues(alpha: 0.35))),
             VolunteerRow(volunteer: volunteer),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpace.l),
             DoorCode(code: r.meetingCode, name: volunteer.firstName, senior: familyView(r.seniorId)),
             const SizedBox(height: 16),
             ContactButtons(name: volunteer.firstName, phone: volunteer.phone ?? ""),
@@ -210,20 +218,23 @@ class DoorCode extends StatelessWidget {
         ? "$name will show you this number. If it doesn't match, don't open the door."
         : "$name will show $senior this number. If it doesn't match, $senior shouldn't open the door.";
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: p.ground, borderRadius: BorderRadius.circular(AppRadius.row)),
+      padding: const EdgeInsets.all(AppSpace.l),
+      decoration: BoxDecoration(color: p.raised, borderRadius: BorderRadius.circular(AppRadius.row)),
       child: Semantics(
         label: "Door code ${code.split('').join(' ')}. $check",
         excludeSemantics: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Door code", style: AppText.secondary(p.muted)),
-            Text(
-              code.split('').join(' '),
-              textScaler: AppText.titleScaler(context),
-              style: AppText.title(p.ink).copyWith(fontSize: 34, fontFeatures: const [FontFeature.tabularFigures()]),
+            Row(
+              children: [
+                Icon(Icons.key_outlined, size: AppText.icon(context, 20), color: p.muted),
+                const SizedBox(width: AppSpace.s),
+                Flexible(child: Text("Door code", style: AppText.secondary(p.muted))),
+              ],
             ),
+            const SizedBox(height: AppSpace.xs),
+            Text(code.split('').join(' '), textScaler: AppText.titleScaler(context), style: AppText.code(p.ink)),
             const SizedBox(height: 4),
             Text(check, style: AppText.secondary(p.ink)),
           ],
@@ -289,7 +300,13 @@ class EmergencyPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Semantics(header: true, child: Text("If something is wrong", style: AppText.section(p.ink))),
+          Row(
+            children: [
+              Icon(Icons.health_and_safety_outlined, color: p.danger, size: AppText.icon(context, 26)),
+              const SizedBox(width: AppSpace.s),
+              Expanded(child: Semantics(header: true, child: Text("If something is wrong", style: AppText.section(p.ink)))),
+            ],
+          ),
           const SizedBox(height: 6),
           Text(
             hasContact
@@ -310,6 +327,33 @@ class EmergencyPanel extends StatelessWidget {
           const SizedBox(height: 8),
           Text("In an emergency, call your local emergency number first.", style: AppText.small(p.muted)),
         ],
+      ),
+    );
+  }
+}
+
+/// The day of a visit as a calendar leaf: weekday over the date, so "when"
+/// is the first thing the eye lands on.
+class DateTile extends StatelessWidget {
+  const DateTile({super.key, required this.when});
+
+  final DateTime when;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final parts = formatShortDay(when).split(' ');
+    return ExcludeSemantics(
+      child: Container(
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: AppSpace.s),
+        decoration: BoxDecoration(color: p.accentTint, borderRadius: BorderRadius.circular(AppRadius.row)),
+        child: Column(
+          children: [
+            Text(parts.first.toUpperCase(), textScaler: TextScaler.noScaling, style: AppText.label(p.accentText).copyWith(letterSpacing: 1.2)),
+            Text(parts.last, textScaler: TextScaler.noScaling, style: AppText.code(p.accentText).copyWith(fontSize: 32, letterSpacing: 0)),
+          ],
+        ),
       ),
     );
   }
