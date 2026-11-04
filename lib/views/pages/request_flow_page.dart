@@ -55,12 +55,12 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
   String get _forLine => _forSomeoneElse ? " · For ${senior.firstName}" : "";
 
   String? _problem() => switch (_step) {
-        0 when _type == null => "Please choose what you need help with.",
-        1 when _day == null => "Please choose a day.",
-        1 when !_when!.isAfter(widget.now ?? DateTime.now()) => "That time has already passed. Please choose a later time.",
-        2 when _place.text.trim().isEmpty => "Please write where you're going.",
-        _ => null,
-      };
+    0 when _type == null => "Please choose what you need help with.",
+    1 when _day == null => "Please choose a day.",
+    1 when !_when!.isAfter(widget.now ?? DateTime.now()) => "That time has already passed. Please choose a later time.",
+    2 when _place.text.trim().isEmpty => "Please write where you're going.",
+    _ => null,
+  };
 
   void _next() {
     final problem = _problem();
@@ -86,12 +86,12 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
   void _announce(String message) => SemanticsService.sendAnnouncement(View.of(context), message, Directionality.of(context));
 
   List<String> get _titles => [
-        _forSomeoneElse ? "What does ${senior.firstName} need help with?" : "What do you need help with?",
-        "When is it?",
-        "Where are you going?",
-        "Anything we should know?",
-        "Check and send",
-      ];
+    _forSomeoneElse ? "What does ${senior.firstName} need help with?" : "What do you need help with?",
+    "When is it?",
+    "Where are you going?",
+    "Anything we should know?",
+    "Check and send",
+  ];
 
   Future<void> _back() async {
     if (_step > 0) {
@@ -165,66 +165,86 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
                 ),
               ),
               Expanded(
-                child: PageBody(
-                  key: ValueKey(_step),
-                  children: [
-                    Semantics(
-                      label: "Step ${_step + 1} of $_steps$_forLine",
-                      excludeSemantics: true,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Step ${_step + 1} of $_steps$_forLine", style: AppText.secondary(p.muted)),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              for (var i = 0; i < _steps; i++) ...[
-                                if (i > 0) const SizedBox(width: 4),
-                                Expanded(
-                                  child: Container(
-                                    height: 6,
-                                    decoration: BoxDecoration(
-                                      color: i <= _step ? p.accent : p.border,
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ),
+                // Each step settles in with a short fade and lift; none with
+                // Reduce Motion on.
+                child: AnimatedSwitcher(
+                  duration: AppMotion.of(context, AppMotion.standard),
+                  switchInCurve: AppMotion.enter,
+                  switchOutCurve: AppMotion.exit,
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween(begin: const Offset(0, 0.03), end: Offset.zero).animate(animation),
+                      child: child,
                     ),
-                    const SizedBox(height: 20),
-                    ScreenTitle(titles[_step]),
-                    const SizedBox(height: 20),
-                    ...switch (_step) {
-                      0 => _whatStep(),
-                      1 => _whenStep(p),
-                      2 => _whereStep(p),
-                      3 => _notesStep(p),
-                      _ => _summaryStep(p),
-                    },
-                    if (_error != null && _step != 2) ...[
-                      const SizedBox(height: 16),
+                  ),
+                  layoutBuilder: (current, previous) => Stack(alignment: Alignment.topCenter, children: [...previous, ?current]),
+                  child: PageBody(
+                    key: ValueKey(_step),
+                    children: [
                       Semantics(
-                        liveRegion: true,
-                        child: Row(
+                        label: "Step ${_step + 1} of $_steps$_forLine",
+                        excludeSemantics: true,
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.error_outline_rounded, color: p.danger, size: AppText.icon(context, 24)),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(_error!, style: AppText.body(p.danger))),
+                            Text("Step ${_step + 1} of $_steps$_forLine", style: AppText.secondary(p.muted)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                for (var i = 0; i < _steps; i++) ...[
+                                  if (i > 0) const SizedBox(width: 4),
+                                  Expanded(
+                                    child: AnimatedContainer(
+                                      duration: AppMotion.of(context, AppMotion.standard),
+                                      curve: AppMotion.enter,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: i <= _step ? p.accent : p.border,
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ],
                         ),
                       ),
+                      const SizedBox(height: 20),
+                      ScreenTitle(titles[_step]),
+                      const SizedBox(height: 20),
+                      ...switch (_step) {
+                        0 => _whatStep(),
+                        1 => _whenStep(p),
+                        2 => _whereStep(p),
+                        3 => _notesStep(p),
+                        _ => _summaryStep(p),
+                      },
+                      if (_error != null && _step != 2) ...[
+                        const SizedBox(height: 16),
+                        Semantics(
+                          liveRegion: true,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.error_outline_rounded, color: p.danger, size: AppText.icon(context, 24)),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(_error!, style: AppText.body(p.danger))),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
               // Pinned so nobody has to discover that the page scrolls to move on.
               DecoratedBox(
-                decoration: BoxDecoration(color: p.ground, border: Border(top: BorderSide(color: p.border))),
+                decoration: BoxDecoration(
+                  color: p.ground,
+                  border: Border(top: BorderSide(color: p.border)),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
                   child: _step < _steps - 1
@@ -240,20 +260,20 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
   }
 
   List<Widget> _whatStep() => [
-        for (final t in HelpType.values) ...[
-          ChoiceTile(
-            icon: iconFor(t),
-            title: helpLabel(t, forName: _forSomeoneElse ? senior.firstName : null),
-            subtitle: helpDescription(t, forName: _forSomeoneElse ? senior.firstName : null),
-            selected: _type == t,
-            onTap: () => setState(() {
-              _type = t;
-              _error = null;
-            }),
-          ),
-          const SizedBox(height: 10),
-        ],
-      ];
+    for (final t in HelpType.values) ...[
+      ChoiceTile(
+        icon: iconFor(t),
+        title: helpLabel(t, forName: _forSomeoneElse ? senior.firstName : null),
+        subtitle: helpDescription(t, forName: _forSomeoneElse ? senior.firstName : null),
+        selected: _type == t,
+        onTap: () => setState(() {
+          _type = t;
+          _error = null;
+        }),
+      ),
+      const SizedBox(height: 10),
+    ],
+  ];
 
   static const _quickTimes = [
     TimeOfDay(hour: 8, minute: 0),
@@ -272,8 +292,8 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
     String dayLabel(DateTime d) => d == today
         ? "Today"
         : d == DateUtils.addDaysToDate(today, 1)
-            ? "Tomorrow"
-            : formatShortDay(d);
+        ? "Tomorrow"
+        : formatShortDay(d);
     void shift(int minutes) {
       final total = (_time.hour * 60 + _time.minute + minutes).clamp(6 * 60, 21 * 60);
       setState(() => _time = TimeOfDay(hour: total ~/ 60, minute: total % 60));
@@ -389,9 +409,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
   }
 
   List<Widget> _whereStep(AppPalette p) {
-    final recent = <String, String>{
-      for (final r in appState.requests.value.where((r) => r.seniorId == senior.id)) r.placeName: r.address,
-    };
+    final recent = <String, String>{for (final r in appState.requests.value.where((r) => r.seniorId == senior.id)) r.placeName: r.address};
     return [
       if (senior.address != null) ...[
         Panel(
@@ -446,62 +464,62 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
   }
 
   List<Widget> _notesStep(AppPalette p) => [
-        Text("Pick anything that helps your volunteer plan.", style: AppText.secondary(p.muted)),
-        const SizedBox(height: 12),
-        for (final n in MobilityNeed.values) ...[
-          ChoiceTile(
-            title: n.label,
-            multi: true,
-            selected: _needs.contains(n),
-            onTap: () => setState(() => _needs = _needs.contains(n) ? ({..._needs}..remove(n)) : {..._needs, n}),
-          ),
-          const SizedBox(height: 10),
-        ],
-        const SizedBox(height: 10),
-        TextField(
-          controller: _notes,
-          style: AppText.body(p.ink),
-          maxLines: 4,
-          minLines: 3,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(labelText: "Anything else (optional)", alignLabelWithHint: true),
-        ),
-        const SizedBox(height: 8),
-        Text("Only the volunteer who says yes sees your notes.", style: AppText.small(p.muted)),
-      ];
+    Text("Pick anything that helps your volunteer plan.", style: AppText.secondary(p.muted)),
+    const SizedBox(height: 12),
+    for (final n in MobilityNeed.values) ...[
+      ChoiceTile(
+        title: n.label,
+        multi: true,
+        selected: _needs.contains(n),
+        onTap: () => setState(() => _needs = _needs.contains(n) ? ({..._needs}..remove(n)) : {..._needs, n}),
+      ),
+      const SizedBox(height: 10),
+    ],
+    const SizedBox(height: 10),
+    TextField(
+      controller: _notes,
+      style: AppText.body(p.ink),
+      maxLines: 4,
+      minLines: 3,
+      textCapitalization: TextCapitalization.sentences,
+      decoration: const InputDecoration(labelText: "Anything else (optional)", alignLabelWithHint: true),
+    ),
+    const SizedBox(height: 8),
+    Text("Only the volunteer who says yes sees your notes.", style: AppText.small(p.muted)),
+  ];
 
   List<Widget> _summaryStep(AppPalette p) {
     Widget row(String label, String value, int step) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Panel(
-            padding: const EdgeInsets.fromLTRB(20, 16, 8, 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(label, style: AppText.secondary(p.muted)),
-                      Text(value, style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
-                    ],
-                  ),
-                ),
-                TextButton(onPressed: () => _change(step), child: Text("Change", semanticsLabel: "Change $label")),
-              ],
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Panel(
+        padding: const EdgeInsets.fromLTRB(20, 16, 8, 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: AppText.secondary(p.muted)),
+                  Text(value, style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
+                ],
+              ),
             ),
-          ),
-        );
+            TextButton(
+              onPressed: () => _change(step),
+              child: Text("Change", semanticsLabel: "Change $label"),
+            ),
+          ],
+        ),
+      ),
+    );
     return [
       row("Help with", helpLabel(_type!, forName: _forSomeoneElse ? senior.firstName : null), 0),
       row("When", formatWhen(_when!, now: _now), 1),
       row("Where", [_place.text.trim(), _address.text.trim()].where((s) => s.isNotEmpty).join(", "), 2),
       row(
         "Good to know",
-        [
-          ..._needs.map((n) => n.label),
-          if (_notes.text.trim().isNotEmpty) "“${_notes.text.trim()}”",
-        ].join("\n").ifEmpty("Nothing added"),
+        [..._needs.map((n) => n.label), if (_notes.text.trim().isNotEmpty) "“${_notes.text.trim()}”"].join("\n").ifEmpty("Nothing added"),
         3,
       ),
       const SizedBox(height: 4),
@@ -558,8 +576,8 @@ class RequestSentPage extends StatelessWidget {
         child: PageBody(
           padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
           children: [
-            Icon(Icons.check_circle_rounded, size: 64, color: p.accent),
-            const SizedBox(height: 20),
+            const Align(alignment: Alignment.centerLeft, child: SuccessMark()),
+            const SizedBox(height: AppSpace.xxl),
             const ScreenTitle("Your request is sent"),
             const SizedBox(height: 12),
             Text("${r.type.label}, ${whenPhrase(r.when)}.", style: AppText.body(p.ink)),
@@ -571,16 +589,13 @@ class RequestSentPage extends StatelessWidget {
               "When someone says yes, you'll see their name on your Home screen${family != null ? ', and so will $family' : ''}.",
               "If nobody has said yes ${byPhrase(r.backupDeadline)}, you'll see a warning there${family != null ? ', and so will $family' : ''}, so there's time for a backup plan.",
             ])
-              InfoLine(icon: Icons.arrow_right_alt_rounded, text: line),
+              InfoLine(icon: Icons.check_rounded, text: line),
             const SizedBox(height: 32),
             PrimaryButton(label: "Back to home", onPressed: () => Navigator.pop(context)),
             const SizedBox(height: 10),
             SecondaryButton(
               label: "See this request",
-              onPressed: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => VisitDetailPage(requestId: r.id)),
-              ),
+              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => VisitDetailPage(requestId: r.id))),
             ),
           ],
         ),

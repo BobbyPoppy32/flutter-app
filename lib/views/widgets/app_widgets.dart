@@ -375,7 +375,7 @@ class ChoiceTile extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(
                   children: [
-                    if (icon != null) ...[Icon(icon, size: AppText.icon(context, 28), color: p.ink), const SizedBox(width: 14)],
+                    if (icon != null) ...[IconTile(icon!, selected: selected), const SizedBox(width: AppSpace.l)],
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -608,4 +608,27 @@ class _StaggeredEntranceState extends State<StaggeredEntrance> with SingleTicker
     opacity: _fade,
     child: SlideTransition(position: _slide, child: widget.child),
   );
+}
+
+/// An icon on a soft round tile, so a list of choices reads as a set.
+class IconTile extends StatelessWidget {
+  const IconTile(this.icon, {super.key, this.selected = false, this.size = 48});
+
+  final IconData icon;
+  final bool selected;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final d = AppText.icon(context, size);
+    return ExcludeSemantics(
+      child: Container(
+        width: d,
+        height: d,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: selected ? p.panel : p.raised),
+        child: Icon(icon, size: d * 0.54, color: selected ? p.accentText : p.ink),
+      ),
+    );
+  }
 }

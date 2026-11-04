@@ -94,7 +94,7 @@ class _FindRequestsPageState extends State<FindRequestsPage> {
                             const SizedBox(height: 4),
                             Text(
                               "Change filters",
-                              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: p.accentText, decoration: TextDecoration.underline),
+                              style: AppText.body(p.accentText).copyWith(fontSize: 17, fontWeight: FontWeight.w700, decoration: TextDecoration.underline),
                             ),
                           ],
                         ),
@@ -209,9 +209,9 @@ class _OpenRequestCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(padding: const EdgeInsets.only(top: 2), child: Icon(iconFor(r.type), size: AppText.icon(context, 26), color: p.ink)),
-              const SizedBox(width: 12),
-              Expanded(child: Text(r.type.label, style: AppText.section(p.ink))),
+              IconTile(iconFor(r.type), size: 44),
+              const SizedBox(width: AppSpace.m),
+              Expanded(child: Padding(padding: const EdgeInsets.only(top: 10), child: Text(r.type.label, style: AppText.section(p.ink)))),
               Icon(Icons.chevron_right_rounded, color: p.muted, size: AppText.icon(context, 28)),
             ],
           ),
@@ -228,7 +228,7 @@ class _OpenRequestCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: p.open.bg, borderRadius: BorderRadius.circular(AppRadius.pill)),
-              child: Text("Needed soon: nobody has said yes", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: p.open.ink)),
+              child: Text("Needed soon: nobody has said yes", style: AppText.label(p.open.ink)),
             ),
           ],
           if (r.droppedBy.isNotEmpty) ...[
@@ -236,7 +236,7 @@ class _OpenRequestCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: p.open.bg, borderRadius: BorderRadius.circular(AppRadius.pill)),
-              child: Text("Their volunteer had to drop out", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: p.open.ink)),
+              child: Text("Their volunteer had to drop out", style: AppText.label(p.open.ink)),
             ),
           ],
         ],

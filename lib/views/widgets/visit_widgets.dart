@@ -177,9 +177,9 @@ class VisitCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(padding: const EdgeInsets.only(top: 2), child: Icon(iconFor(r.type), size: AppText.icon(context, 26), color: p.ink)),
-              const SizedBox(width: 12),
-              Expanded(child: Text(r.type.label, style: AppText.section(p.ink))),
+              IconTile(iconFor(r.type), size: 44),
+              const SizedBox(width: AppSpace.m),
+              Expanded(child: Padding(padding: const EdgeInsets.only(top: 10), child: Text(r.type.label, style: AppText.section(p.ink)))),
               Icon(Icons.chevron_right_rounded, color: p.muted, size: AppText.icon(context, 28)),
             ],
           ),
@@ -444,4 +444,90 @@ class _RoutePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RoutePainter old) => old.progress != progress || old.ink != ink;
+}
+
+/// The one drawn success moment: a ring closes and a tick draws in, with a
+/// gentle haptic tap. Shown complete at once with Reduce Motion on.
+class SuccessMark extends StatefulWidget {
+  const SuccessMark({super.key, this.size = 76});
+
+  final double size;
+
+  @override
+  State<SuccessMark> createState() => _SuccessMarkState();
+}
+
+class _SuccessMarkState extends State<SuccessMark> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: AppMotion.emphasized * 2);
+
+  @override
+  void initState() {
+    super.initState();
+    HapticFeedback.mediumImpact();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _c.value = 1;
+    } else if (_c.isDismissed) {
+      _c.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return ExcludeSemantics(
+      child: SizedBox.square(
+        dimension: widget.size,
+        child: AnimatedBuilder(
+          animation: _c,
+          builder: (context, _) => CustomPaint(painter: _SuccessPainter(AppMotion.enter.transform(_c.value), p.accent, p.accentTint)),
+        ),
+      ),
+    );
+  }
+}
+
+class _SuccessPainter extends CustomPainter {
+  _SuccessPainter(this.t, this.ink, this.fill);
+
+  final double t;
+  final Color ink;
+  final Color fill;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    final r = size.width / 2 - 3;
+    final stroke = Paint()
+      ..color = ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.07
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final ring = (t / 0.6).clamp(0.0, 1.0);
+    final tick = ((t - 0.5) / 0.5).clamp(0.0, 1.0);
+    canvas.drawCircle(c, r * (0.85 + 0.15 * ring), Paint()..color = fill.withValues(alpha: ring));
+    canvas.drawArc(Rect.fromCircle(center: c, radius: r), -1.57, 6.283 * ring, false, stroke);
+    if (tick > 0) {
+      final path = Path()
+        ..moveTo(size.width * 0.30, size.height * 0.52)
+        ..lineTo(size.width * 0.45, size.height * 0.66)
+        ..lineTo(size.width * 0.71, size.height * 0.38);
+      final m = path.computeMetrics().first;
+      canvas.drawPath(m.extractPath(0, m.length * tick), stroke);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SuccessPainter old) => old.t != t || old.ink != ink;
 }
