@@ -1,35 +1,171 @@
-// Save this to: lib/main.dart (replaces existing file)
-
 import 'package:flutter/material.dart';
+import 'package:flutter_app/data/app_state.dart';
 import 'package:flutter_app/data/constants.dart';
 import 'package:flutter_app/data/notifiers.dart';
 import 'package:flutter_app/views/pages/welcome_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_app/views/widget_tree.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await loadSettings();
+  await appState.init();
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+ThemeData buildTheme(AppPalette p, Brightness brightness) {
+  final scheme = ColorScheme.fromSeed(seedColor: AppColors.tealStart, brightness: brightness).copyWith(
+    primary: p.accent,
+    onPrimary: p.onAccent,
+    surface: p.ground,
+    onSurface: p.ink,
+    onSurfaceVariant: p.muted,
+    error: p.danger,
+    outline: p.border,
+  );
+  final pill = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.pill));
+  const label = TextStyle(fontFamily: AppText.bodyFamily, fontSize: 18, fontWeight: FontWeight.w700);
+  final field = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppRadius.row),
+    borderSide: BorderSide(color: p.border, width: 1.5),
+  );
 
-  @override
-  State<MyApp> createState() => _MyAppState();
+  return ThemeData(
+    useMaterial3: true,
+    brightness: brightness,
+    colorScheme: scheme,
+    extensions: [p],
+    fontFamily: AppText.bodyFamily,
+    scaffoldBackgroundColor: p.ground,
+    textTheme: TextTheme(
+      headlineMedium: AppText.title(p.ink),
+      titleLarge: AppText.heading(p.ink),
+      titleMedium: AppText.section(p.ink),
+      bodyLarge: AppText.body(p.ink),
+      bodyMedium: AppText.secondary(p.ink),
+      bodySmall: AppText.small(p.muted),
+      labelLarge: label,
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: p.ground,
+      surfaceTintColor: Colors.transparent,
+      foregroundColor: p.ink,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+      titleTextStyle: AppText.section(p.ink),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: p.accent,
+        foregroundColor: p.onAccent,
+        disabledBackgroundColor: p.panel,
+        disabledForegroundColor: p.muted,
+        minimumSize: const Size(64, 60),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        shape: pill,
+        textStyle: label,
+      ),
+    ),
+    // Secondary actions are tonal: a panel-coloured pill, no outline.
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: p.ink,
+        backgroundColor: p.panel,
+        // Disabled stays readable (muted ink, 5.5:1), never faded out.
+        disabledForegroundColor: p.muted,
+        minimumSize: const Size(64, 56),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        // A visible edge, so a low-vision user can tell it's a button.
+        side: BorderSide(color: p.border, width: 1.5),
+        shape: pill,
+        textStyle: label,
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: p.accentText,
+        minimumSize: const Size(48, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        // Underlined so a text action reads as tappable without colour.
+        textStyle: label.copyWith(fontSize: 17, decoration: TextDecoration.underline, decorationThickness: 1.5),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: p.ground,
+      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+      border: field,
+      enabledBorder: field,
+      focusedBorder: field.copyWith(borderSide: BorderSide(color: p.accent, width: 2.5)),
+      errorBorder: field.copyWith(borderSide: BorderSide(color: p.danger, width: 2)),
+      focusedErrorBorder: field.copyWith(borderSide: BorderSide(color: p.danger, width: 2.5)),
+      labelStyle: AppText.secondary(p.muted),
+      floatingLabelStyle: AppText.secondary(p.accentText),
+      hintStyle: AppText.secondary(p.muted),
+      errorStyle: AppText.small(p.danger),
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: p.ground,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+      titleTextStyle: AppText.heading(p.ink),
+      contentTextStyle: AppText.body(p.ink),
+    ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: p.ground,
+      surfaceTintColor: Colors.transparent,
+      showDragHandle: false,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.card))),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: p.ink,
+      contentTextStyle: AppText.secondary(p.ground),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.row)),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: p.ground,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: p.accentTint,
+      height: 72,
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (s) => TextStyle(
+          fontFamily: AppText.bodyFamily,
+          fontSize: 15,
+          fontWeight: s.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w400,
+          color: s.contains(WidgetState.selected) ? p.ink : p.muted,
+        ),
+      ),
+      iconTheme: WidgetStateProperty.resolveWith(
+        (s) => IconThemeData(size: 26, color: s.contains(WidgetState.selected) ? p.ink : p.muted),
+      ),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.onAccent : p.muted),
+      trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.accent : p.panel),
+      trackOutlineColor: WidgetStateProperty.all(p.border),
+    ),
+    sliderTheme: SliderThemeData(
+      activeTrackColor: p.accent,
+      inactiveTrackColor: p.border,
+      thumbColor: p.accent,
+      trackHeight: 6,
+      overlayColor: p.accent.withValues(alpha: 0.12),
+    ),
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: p.ground,
+      surfaceTintColor: Colors.transparent,
+      headerBackgroundColor: p.panel,
+      headerForegroundColor: p.ink,
+    ),
+    dividerTheme: DividerThemeData(color: p.border, thickness: 1, space: 1),
+    progressIndicatorTheme: ProgressIndicatorThemeData(color: p.accent, linearTrackColor: p.panel),
+    listTileTheme: ListTileThemeData(minVerticalPadding: 12, iconColor: p.ink, textColor: p.ink),
+  );
 }
 
-class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    initThemeMode();
-    super.initState();
-  }
-
-  void initThemeMode() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    // Fixed: this now reads the SAME key that widget_tree.dart writes to.
-    final bool? isDark = prefs.getBool(KConstants.ThemeModeKey);
-    isDarkModeNotifier.value = isDark ?? false;
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,15 +173,28 @@ class _MyAppState extends State<MyApp> {
       valueListenable: isDarkModeNotifier,
       builder: (context, isDarkMode, child) {
         return MaterialApp(
+          title: "Alongside",
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.tealStart,
-              brightness: isDarkMode ? Brightness.dark : Brightness.light,
-            ),
+          theme: buildTheme(AppPalette.light, Brightness.light),
+          darkTheme: buildTheme(AppPalette.dark, Brightness.dark),
+          themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          // The in-app text size multiplies the phone's own setting, so a
+          // senior who already set large text on their iPhone keeps it.
+          // Capped at 2x, which every screen is laid out to survive.
+          builder: (context, child) => ValueListenableBuilder(
+            valueListenable: textScaleNotifier,
+            builder: (context, textScale, _) {
+              final system = MediaQuery.textScalerOf(context).scale(1);
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear((system * textScale).clamp(1.0, 2.0))),
+                child: child!,
+              );
+            },
           ),
-          home: const WelcomePage(),
+          home: ValueListenableBuilder(
+            valueListenable: appState.currentUser,
+            builder: (context, user, _) => user == null ? const WelcomePage() : const WidgetTree(),
+          ),
         );
       },
     );
