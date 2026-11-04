@@ -107,7 +107,7 @@ class ProfilePage extends StatelessWidget {
               onChanged: (v) => appState.updateCurrentUser((u) => u.copyWith(shareWithFamily: v)),
               title: Text("${user.emergencyName!.split(' ').first} can follow my visits", style: AppText.body(p.ink)),
               subtitle: Text(
-                "They'll see who's coming and be told if nobody says yes in time.",
+                "In their app, they'll see who's coming and a warning if nobody says yes in time.",
                 style: AppText.secondary(p.muted),
               ),
             ),

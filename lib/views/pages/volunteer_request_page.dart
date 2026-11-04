@@ -159,14 +159,14 @@ class VolunteerActions extends StatelessWidget {
           final ok = await confirmAction(
             context,
             title: "Help ${senior.firstName} ${whenPhrase(r.when)}?",
-            body: "You're promising to be there. ${senior.firstName}$family will be told it's you. "
+            body: "You're promising to be there. ${senior.firstName}$family will see it's you in the app. "
                 "If anything changes, let them know as early as you can.",
             confirmLabel: "Yes, I'll help",
           );
           if (!ok) return;
           final accepted = await appState.accept(r.id, me.id);
           if (!context.mounted) return;
-          showDone(context, accepted ? "You're helping ${senior.firstName}. We've told them$family." : "Sorry, this request isn't open to you any more.");
+          showDone(context, accepted ? "You're helping ${senior.firstName}. ${senior.firstName}$family can now see it's you." : "Sorry, this request isn't open to you any more.");
         },
       );
     }
@@ -180,7 +180,7 @@ class VolunteerActions extends StatelessWidget {
         final ok = await confirmAction(
           context,
           title: "Can't make it?",
-          body: "${senior.firstName}$family will be told, and we'll ask other volunteers straight away."
+          body: "${senior.firstName}$family will see that you can't come, and other volunteers can see the request again straight away."
               "${soon ? " It's less than a day away, so please call ${senior.firstName} too." : ""}",
           confirmLabel: "Yes, I can't make it",
           cancelLabel: "I can still go",
@@ -223,7 +223,7 @@ class VolunteerActions extends StatelessWidget {
               Text(
                 r.confirmedAt != null
                     ? "You've confirmed. \"I'm at the door\" appears an hour before."
-                    : "The day before, we'll ask you to confirm you're still coming.",
+                    : "The day before, come back here to confirm you're still coming.",
                 style: AppText.secondary(p.muted),
               ),
             const SizedBox(height: 10),

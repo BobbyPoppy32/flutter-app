@@ -182,7 +182,7 @@ class NextVisitPanel extends StatelessWidget {
           ] else ...[
             const SizedBox(height: 12),
             Text(
-              "We'll tell you as soon as a volunteer says yes. If nobody has ${byPhrase(r.backupDeadline)}, we'll let you know so there's time for a backup plan.",
+              "When a volunteer says yes, their name shows here. If nobody has ${byPhrase(r.backupDeadline)}, you'll see a warning on this screen, so there's time for a backup plan.",
               style: AppText.secondary(p.ink),
             ),
           ],

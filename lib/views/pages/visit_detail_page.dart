@@ -46,7 +46,7 @@ class VisitDetailPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 Panel(
                   child: Text(
-                    "${dropped.firstName} can't make it any more. We're asking other volunteers now.",
+                    "${dropped.firstName} can't make it any more. Other volunteers can see your request again.",
                     style: AppText.secondary(p.ink),
                   ),
                 ),
@@ -98,7 +98,7 @@ class VisitDetailPage extends StatelessWidget {
               ],
               if (r.problem != null) ...[
                 const SizedBox(height: 20),
-                Panel(child: Text("You reported a problem: ${r.problem}. A coordinator will call you.", style: AppText.secondary(p.ink))),
+                Panel(child: Text("You reported a problem: ${r.problem}. It's saved with this visit.", style: AppText.secondary(p.ink))),
               ],
               const SizedBox(height: 32),
               if (r.volunteerId != null && r.problem == null && r.status != RequestStatus.cancelled) ...[
@@ -114,7 +114,7 @@ class VisitDetailPage extends StatelessWidget {
                       context,
                       title: "Cancel this request?",
                       body: volunteer != null
-                          ? "${volunteer.firstName} will be told you don't need help ${whenPhrase(r.when)} any more."
+                          ? "${volunteer.firstName} will see that you don't need help ${whenPhrase(r.when)} any more."
                           : "Volunteers will stop seeing it.",
                       confirmLabel: "Yes, cancel it",
                       cancelLabel: "Keep it",
@@ -148,8 +148,9 @@ Future<void> reportProblem(BuildContext context, HelpRequest r) async {
             children: [
               Semantics(header: true, child: Text("What happened?", style: AppText.heading(p.ink))),
               const SizedBox(height: 8),
+              // shortcut: nobody is told about a report yet, so the copy only promises it is saved; name a real coordinator once one exists.
               Text(
-                "A coordinator will call you within a day. If you're in danger, call your local emergency number now.",
+                "Your report is saved with this visit. If you need help now, call someone you trust. If you're in danger, call your local emergency number now.",
                 style: AppText.secondary(p.ink),
               ),
               const SizedBox(height: 20),
@@ -167,7 +168,7 @@ Future<void> reportProblem(BuildContext context, HelpRequest r) async {
   );
   if (choice == null) return;
   await appState.reportProblem(r.id, choice);
-  if (context.mounted) showDone(context, "Thank you. A coordinator will call you.");
+  if (context.mounted) showDone(context, "Thank you. Your report is saved with this visit.");
 }
 
 class _RatingSection extends StatefulWidget {

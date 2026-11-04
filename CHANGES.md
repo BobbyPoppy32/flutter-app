@@ -270,6 +270,15 @@ Four problems found while tapping through the app in the simulator, now fixed:
 - **Icons at large text.** Button, tile, card and chevron icons now grow with the text, capped at 1.5x like titles. Before, they stayed small at 200%.
 - **Needs.** On a request, a volunteer now sees the needs from the request and from the senior's profile together. Before, "No mobility needs listed" could sit next to "Margaret is hard of hearing".
 
+### After the second court trial
+
+A 12-juror trial (`docs/court-verdict-app-test.md`) asked whether the app is ready for a supervised test with real people. The verdict was GUILTY, 8 to 4. The charge every guilty juror relied on was that the app promises things nobody does. Every such line now says only what the app does:
+
+- **Report a problem.** "A coordinator will call you" is now "Your report is saved with this visit. If you need help now, call someone you trust", followed by the emergency-number line. A `shortcut:` comment marks where a real coordinator goes once one exists.
+- **"We'll tell you" and "will be told".** These now say where to look. "You'll see a warning on your Home screen, and so will Lena". "Margaret and Lena will see it's you in the app". "Other volunteers can see the request again". "The day before, come back here to confirm."
+
+The verdict's other two conditions are for the owner, not the code: a one-page test plan with a named facilitator, and a signed consent step.
+
 ## Decisions I made on my own
 
 - **Name:** "Alongside", from "someone to come along with me". The iOS display name is changed; the bundle id is left as `com.example.flutterApp`.
@@ -289,7 +298,7 @@ Four problems found while tapping through the app in the simulator, now fixed:
 
 ## Left unfinished, or for the owner
 
-- **The verdict's business conditions:** name a launch area and a partner (a clinic or volunteer centre) whose volunteers are already checked and insured, and write down who pays for the backend, the checks and ride insurance. The app says "a coordinator will call you" after a problem report; that coordinator has to exist.
+- **The verdict's business conditions:** name a launch area and a partner (a clinic or volunteer centre) whose volunteers are already checked and insured, and write down who pays for the backend, the checks and ride insurance. The app no longer promises a coordinator after a problem report; it only saves the report. A real coordinator is still needed before real visits.
 - **A backend.** Requests only live on this phone, so a senior and a volunteer on two phones can't meet yet. The vetting gate, privacy and alerts are in `AppState` and would move to the server.
 - **Real notifications** (the day-before reminder, family alerts). They appear in the app, not as push notifications.
 - **Real calls and messages** only work on a phone. The simulator shows the number instead.

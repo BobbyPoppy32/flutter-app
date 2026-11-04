@@ -514,7 +514,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
       ),
       const SizedBox(height: 12),
       Text(
-        "Only checked volunteers can see your request. If nobody says yes in time, we'll tell you${senior.emergencyName != null && senior.shareWithFamily ? ' and ${senior.emergencyName!.split(' ').first}' : ''} so there's time for a backup plan.",
+        "Only checked volunteers can see your request. If nobody says yes in time, you'll see a warning on your Home screen${senior.emergencyName != null && senior.shareWithFamily ? ', and so will ${senior.emergencyName!.split(' ').first}' : ''}, so there's time for a backup plan.",
         style: AppText.secondary(p.ink),
       ),
     ];
@@ -571,8 +571,8 @@ class RequestSentPage extends StatelessWidget {
             const SizedBox(height: 12),
             for (final line in [
               "Checked volunteers near you can now see it.",
-              "When someone says yes, you'll see their name here${family != null ? ', and $family will be told' : ''}.",
-              "If nobody has said yes ${byPhrase(r.backupDeadline)}, we'll tell you${family != null ? ' and $family' : ''}, so there's time for a backup plan.",
+              "When someone says yes, you'll see their name on your Home screen${family != null ? ', and so will $family' : ''}.",
+              "If nobody has said yes ${byPhrase(r.backupDeadline)}, you'll see a warning there${family != null ? ', and so will $family' : ''}, so there's time for a backup plan.",
             ])
               InfoLine(icon: Icons.arrow_right_alt_rounded, text: line),
             const SizedBox(height: 32),

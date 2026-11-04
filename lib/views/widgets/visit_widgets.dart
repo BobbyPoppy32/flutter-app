@@ -27,7 +27,7 @@ class JourneyTimeline extends StatelessWidget {
       (
         r.volunteerId == null ? "Finding a volunteer" : "$who said yes",
         r.volunteerId == null
-            ? "We'll tell you ${byPhrase(r.backupDeadline)} if nobody has"
+            ? "If nobody says yes ${byPhrase(r.backupDeadline)}, a warning shows here"
             : r.confirmedAt != null
                 ? "Confirmed again ${whenPhrase(r.confirmedAt!)}"
                 : r.status == RequestStatus.matched
