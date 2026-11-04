@@ -11,6 +11,17 @@ const _days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday
 String? familyView(String seniorId) =>
     appState.currentUser.value?.id == seniorId ? null : appState.userById(seniorId)?.firstName ?? "their";
 
+/// A help type's label, said about [forName] when family is asking.
+String helpLabel(HelpType t, {String? forName}) =>
+    forName != null && t == HelpType.comeAlong ? "Someone to go with $forName" : t.label;
+
+/// A help type's description, said about [forName] when family is asking.
+String helpDescription(HelpType t, {String? forName}) => switch ((t, forName)) {
+      (HelpType.checkup, final String n) => "A visit to $n's doctor or clinic",
+      (HelpType.ride, final String n) => "Someone drives $n there and back",
+      _ => t.description,
+    };
+
 /// "your door" for the senior, "Margaret's door" for their family.
 String doorOf(String seniorId) => switch (familyView(seniorId)) { null => "your door", final n => "$n's door" };
 

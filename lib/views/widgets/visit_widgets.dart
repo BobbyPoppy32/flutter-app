@@ -36,7 +36,7 @@ class JourneyTimeline extends StatelessWidget {
       ),
       (
         forVolunteer ? "At $senior's door" : "$who at ${doorOf(r.seniorId)}",
-        r.checkedInAt != null ? "Arrived at ${formatTime(r.checkedInAt!)}" : "Planned for ${formatWhen(r.doorTime)}",
+        r.checkedInAt != null ? "Arrived at ${formatTime(r.checkedInAt!)}" : "Planned for ${whenPhrase(r.doorTime).replaceFirst(RegExp('^on '), '')}",
       ),
       ("Visit done", r.completedAt != null ? formatWhen(r.completedAt!) : ""),
     ];
@@ -324,11 +324,11 @@ class _RouteMotifState extends State<RouteMotif> with SingleTickerProviderStateM
   late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100));
 
   @override
-  void initState() {
-    super.initState();
-    if (WidgetsBinding.instance.platformDispatcher.accessibilityFeatures.disableAnimations) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
       _c.value = 1;
-    } else {
+    } else if (_c.isDismissed) {
       _c.forward();
     }
   }

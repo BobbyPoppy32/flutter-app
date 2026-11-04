@@ -51,6 +51,8 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
   DateTime? get _when => _day == null ? null : DateTime(_day!.year, _day!.month, _day!.day, _time.hour, _time.minute);
 
   bool get _forSomeoneElse => appState.currentUser.value?.id != senior.id;
+  // On the step line rather than beside Back, so it can wrap at large text.
+  String get _forLine => _forSomeoneElse ? " · For ${senior.firstName}" : "";
 
   String? _problem() => switch (_step) {
         0 when _type == null => "Please choose what you need help with.",
@@ -159,11 +161,6 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
                       label: const Text("Back"),
                       style: TextButton.styleFrom(foregroundColor: p.ink),
                     ),
-                    const Spacer(),
-                    if (_forSomeoneElse)
-                      Flexible(
-                        child: Text("For ${senior.firstName}", overflow: TextOverflow.ellipsis, style: AppText.secondary(p.muted)),
-                      ),
                   ],
                 ),
               ),
@@ -172,12 +169,12 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
                   key: ValueKey(_step),
                   children: [
                     Semantics(
-                      label: "Step ${_step + 1} of $_steps",
+                      label: "Step ${_step + 1} of $_steps$_forLine",
                       excludeSemantics: true,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Step ${_step + 1} of $_steps", style: AppText.secondary(p.muted)),
+                          Text("Step ${_step + 1} of $_steps$_forLine", style: AppText.secondary(p.muted)),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -246,8 +243,8 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
         for (final t in HelpType.values) ...[
           ChoiceTile(
             icon: iconFor(t),
-            title: t.label,
-            subtitle: t.description,
+            title: helpLabel(t, forName: _forSomeoneElse ? senior.firstName : null),
+            subtitle: helpDescription(t, forName: _forSomeoneElse ? senior.firstName : null),
             selected: _type == t,
             onTap: () => setState(() {
               _type = t;
@@ -496,7 +493,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
           ),
         );
     return [
-      row("Help with", _type!.label, 0),
+      row("Help with", helpLabel(_type!, forName: _forSomeoneElse ? senior.firstName : null), 0),
       row("When", formatWhen(_when!, now: _now), 1),
       row("Where", [_place.text.trim(), _address.text.trim()].where((s) => s.isNotEmpty).join(", "), 2),
       row(

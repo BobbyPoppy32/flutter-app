@@ -535,13 +535,17 @@ class _StaggeredEntranceState extends State<StaggeredEntrance> with SingleTicker
   late final Animation<double> _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
   late final Animation<Offset> _slide = Tween(begin: const Offset(0, 0.04), end: Offset.zero).animate(_fade);
 
+  bool _started = false;
+
+  // Read from MediaQuery, not once at start, so a change in the phone's
+  // Reduce Motion setting is followed and tests can switch it on.
   @override
-  void initState() {
-    super.initState();
-    final reduceMotion = WidgetsBinding.instance.platformDispatcher.accessibilityFeatures.disableAnimations;
-    if (reduceMotion) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
       _controller.value = 1;
-    } else {
+    } else if (!_started) {
+      _started = true;
       Future.delayed(Duration(milliseconds: 50 * widget.index.clamp(0, 6)), () {
         if (mounted) _controller.forward();
       });
