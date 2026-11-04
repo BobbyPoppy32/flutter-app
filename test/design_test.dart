@@ -162,4 +162,16 @@ void main() {
     // Plenty of notice: a day before, to the quarter hour.
     expect(make(DateTime(2026, 11, 1, 9), DateTime(2026, 11, 6, 14, 20)).backupDeadline, DateTime(2026, 11, 5, 14, 15));
   });
+
+  testWidgets('the request flow works in landscape at 200% text', (tester) async {
+    tester.view.physicalSize = const Size(2622, 1206);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await appState.signInDemo(UserRole.senior);
+    await tester.pumpWidget(at(RequestFlowPage(seniorId: 'demo-senior', now: DateTime.now()), scale: 2));
+    await tester.pumpAndSettle();
+    await tapText(tester, 'Blood or lab test');
+    await tapText(tester, 'Next');
+    expect(find.text('When is it?'), findsOneWidget);
+  });
 }

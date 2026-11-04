@@ -30,8 +30,10 @@ class SeniorHomePage extends StatelessWidget {
               header: true,
               child: Text("${greeting(now)}, ${user.firstName}", textScaler: AppText.titleScaler(context), style: AppText.title(p.ink)),
             ),
-            const SizedBox(height: 8),
-            Text(todayLine(upcoming, now, you: true), style: AppText.body(p.ink)),
+            if (todayLine(upcoming, now, you: true) case final line when line.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(line, style: AppText.body(p.ink)),
+            ],
             const SizedBox(height: 24),
             PrimaryButton(
               label: "Ask for help",
@@ -82,8 +84,8 @@ String todayLine(List<HelpRequest> upcoming, DateTime now, {required bool you, S
   // Good news first; the warning card right below carries the detail.
   if (urgent != null) {
     final helper = appState.userById(booked?.volunteerId);
-    final pending = "${whose[0].toUpperCase()}${whose.substring(1)} ${urgent.type.noun} still needs a volunteer.";
-    return helper == null ? pending : "${helper.firstName} is helping with $whose ${booked!.type.noun} ${whenPhrase(booked.when, now: now)}. $pending";
+    // The warning card right below says what still needs a volunteer.
+    return helper == null ? "" : "${helper.firstName} is helping with $whose ${booked!.type.noun} ${whenPhrase(booked.when, now: now)}.";
   }
   final r = upcoming.first;
   final volunteer = appState.userById(r.volunteerId);

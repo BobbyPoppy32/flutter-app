@@ -40,8 +40,10 @@ class FamilyHomePage extends StatelessWidget {
         return PageBody(
           children: [
             Semantics(header: true, child: Text("${greeting(now)}, ${me.firstName}", textScaler: AppText.titleScaler(context), style: AppText.title(p.ink))),
-            const SizedBox(height: 8),
-            Text(todayLine(upcoming, now, you: false, name: senior.firstName), style: AppText.body(p.ink)),
+            if (todayLine(upcoming, now, you: false, name: senior.firstName) case final line when line.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(line, style: AppText.body(p.ink)),
+            ],
             const SizedBox(height: 24),
             PrimaryButton(
               label: "Ask for help for ${senior.firstName}",

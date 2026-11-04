@@ -142,6 +142,13 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
   Widget build(BuildContext context) {
     final p = context.palette;
     final titles = _titles;
+    final mq = MediaQuery.of(context);
+    // Pinned when there is room; in landscape at large text it would leave
+    // the question a sliver, so it scrolls with the step instead.
+    final pinned = mq.orientation == Orientation.portrait || mq.textScaler.scale(1) <= 1.5;
+    final action = _step < _steps - 1
+        ? PrimaryButton(label: _fromSummary ? "Save and go back to the summary" : "Next", onPressed: _next)
+        : PrimaryButton(label: "Send my request", icon: Icons.send_rounded, onPressed: _sending ? null : _send);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -200,7 +207,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
                                       curve: AppMotion.enter,
                                       height: 6,
                                       decoration: BoxDecoration(
-                                        color: i <= _step ? p.accent : p.border,
+                                        color: i <= _step ? p.accent : p.border.withValues(alpha: 0.35),
                                         borderRadius: BorderRadius.circular(3),
                                       ),
                                     ),
@@ -235,21 +242,21 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
                           ),
                         ),
                       ],
+                      if (!pinned) ...[const SizedBox(height: AppSpace.xxl), action],
                     ],
                   ),
                 ),
               ),
               // Pinned so nobody has to discover that the page scrolls to move on.
-              DecoratedBox(
+              if (pinned)
+                DecoratedBox(
                 decoration: BoxDecoration(
                   color: p.ground,
                   border: Border(top: BorderSide(color: p.border.withValues(alpha: 0.35))),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                  child: _step < _steps - 1
-                      ? PrimaryButton(label: _fromSummary ? "Save and go back to the summary" : "Next", onPressed: _next)
-                      : PrimaryButton(label: "Send my request", icon: Icons.send_rounded, onPressed: _sending ? null : _send),
+                  child: action,
                 ),
               ),
             ],
