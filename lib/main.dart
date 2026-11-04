@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/data/app_state.dart';
 import 'package:flutter_app/data/constants.dart';
@@ -13,7 +14,7 @@ void main() async {
 }
 
 ThemeData buildTheme(AppPalette p, Brightness brightness) {
-  final scheme = ColorScheme.fromSeed(seedColor: AppColors.tealStart, brightness: brightness).copyWith(
+  final scheme = ColorScheme.fromSeed(seedColor: AppColors.navy, brightness: brightness).copyWith(
     primary: p.accent,
     onPrimary: p.onAccent,
     surface: p.ground,
@@ -36,6 +37,12 @@ ThemeData buildTheme(AppPalette p, Brightness brightness) {
     extensions: [p],
     fontFamily: AppText.bodyFamily,
     scaffoldBackgroundColor: p.ground,
+    // A soft press tint instead of the Android ripple, as on iOS.
+    splashFactory: NoSplash.splashFactory,
+    highlightColor: p.ink.withValues(alpha: 0.06),
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {TargetPlatform.iOS: _CalmTransitions(), TargetPlatform.android: _CalmTransitions()},
+    ),
     textTheme: TextTheme(
       headlineMedium: AppText.title(p.ink),
       titleLarge: AppText.heading(p.ink),
@@ -124,10 +131,10 @@ ThemeData buildTheme(AppPalette p, Brightness brightness) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.row)),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: p.ground,
+      backgroundColor: p.panel,
       surfaceTintColor: Colors.transparent,
       indicatorColor: p.accentTint,
-      height: 72,
+      height: 76,
       labelTextStyle: WidgetStateProperty.resolveWith(
         (s) => TextStyle(
           fontFamily: AppText.bodyFamily,
@@ -137,7 +144,7 @@ ThemeData buildTheme(AppPalette p, Brightness brightness) {
         ),
       ),
       iconTheme: WidgetStateProperty.resolveWith(
-        (s) => IconThemeData(size: 26, color: s.contains(WidgetState.selected) ? p.ink : p.muted),
+        (s) => IconThemeData(size: 26, color: s.contains(WidgetState.selected) ? p.accentText : p.muted),
       ),
     ),
     switchTheme: SwitchThemeData(
@@ -164,6 +171,19 @@ ThemeData buildTheme(AppPalette p, Brightness brightness) {
   );
 }
 
+/// iOS-style slides between screens, shown at once with Reduce Motion on.
+/// The labelled Back button stays on every screen, so the edge swipe is a
+/// shortcut, never the only way back.
+class _CalmTransitions extends PageTransitionsBuilder {
+  const _CalmTransitions();
+
+  @override
+  Widget buildTransitions<T>(PageRoute<T> route, BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+    return const CupertinoPageTransitionsBuilder().buildTransitions(route, context, animation, secondaryAnimation, child);
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -178,6 +198,8 @@ class MyApp extends StatelessWidget {
           theme: buildTheme(AppPalette.light, Brightness.light),
           darkTheme: buildTheme(AppPalette.dark, Brightness.dark),
           themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          themeAnimationDuration: AppMotion.standard,
+          themeAnimationCurve: AppMotion.enter,
           // The in-app text size multiplies the phone's own setting, so a
           // senior who already set large text on their iPhone keeps it.
           // Capped at 2x, which every screen is laid out to survive.
