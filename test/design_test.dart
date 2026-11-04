@@ -151,4 +151,15 @@ void main() {
       expect(find.text('Your request is sent'), findsOneWidget);
     });
   }
+
+  test('the backup deadline is a round daytime time', () {
+    HelpRequest make(DateTime created, DateTime when) =>
+        HelpRequest(id: 'x', seniorId: 's', type: HelpType.medicine, when: when, placeName: 'P', address: '', distanceKm: 1, status: RequestStatus.open, createdAt: created, meetingCode: '1234');
+    // Asked at 4:28 pm for 10 am tomorrow: halfway is 1:14 am, so warn at 8 pm tonight.
+    expect(make(DateTime(2026, 11, 4, 16, 28), DateTime(2026, 11, 5, 10)).backupDeadline, DateTime(2026, 11, 4, 20));
+    // Asked at 10:30 pm for 10 am: the evening is past, so 8 am.
+    expect(make(DateTime(2026, 11, 4, 22, 30), DateTime(2026, 11, 5, 10)).backupDeadline, DateTime(2026, 11, 5, 8));
+    // Plenty of notice: a day before, to the quarter hour.
+    expect(make(DateTime(2026, 11, 1, 9), DateTime(2026, 11, 6, 14, 20)).backupDeadline, DateTime(2026, 11, 5, 14, 15));
+  });
 }

@@ -305,10 +305,24 @@ class HelpRequest {
       type == HelpType.medicine ? when.add(const Duration(minutes: 30)) : when.subtract(const Duration(minutes: 45));
 
   /// When we warn the senior and their family if nobody has said yes: a day
-  /// before, or halfway to the visit for short-notice requests.
+  /// before, or halfway to the visit for short-notice requests. Rounded to a
+  /// quarter hour so it reads as a time people use, and never in the night:
+  /// an overnight deadline moves to 8 pm the evening before, or 8 am if that
+  /// is already past.
   DateTime get backupDeadline {
     final dayBefore = when.subtract(const Duration(hours: 24));
-    return dayBefore.isAfter(createdAt) ? dayBefore : createdAt.add(when.difference(createdAt) ~/ 2);
+    var d = dayBefore.isAfter(createdAt) ? dayBefore : createdAt.add(when.difference(createdAt) ~/ 2);
+    d = DateTime(d.year, d.month, d.day, d.hour, d.minute - d.minute % 15);
+    if (d.hour >= 21 || d.hour < 8) {
+      final evening = DateTime(d.year, d.month, d.day - (d.hour < 8 ? 1 : 0), 20);
+      final morning = DateTime(d.year, d.month, d.day + (d.hour >= 21 ? 1 : 0), 8);
+      if (evening.isAfter(createdAt)) {
+        d = evening;
+      } else if (morning.isBefore(when)) {
+        d = morning;
+      }
+    }
+    return d;
   }
 
   /// Still ahead: open or booked and not yet over, or under way (a visit
