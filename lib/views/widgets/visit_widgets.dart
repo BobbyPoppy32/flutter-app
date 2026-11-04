@@ -174,21 +174,30 @@ class VisitCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // One card layout everywhere: icon, status and title on top, then
+          // when, where and who.
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconTile(iconFor(r.type), size: 44),
               const SizedBox(width: AppSpace.m),
-              Expanded(child: Padding(padding: const EdgeInsets.only(top: 10), child: Text(r.type.label, style: AppText.section(p.ink)))),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    StatusPill(r.status, forVolunteer: forVolunteer),
+                    const SizedBox(height: AppSpace.s),
+                    Text(r.type.label, style: AppText.heading(p.ink)),
+                  ],
+                ),
+              ),
               Icon(Icons.chevron_right_rounded, color: p.muted, size: AppText.icon(context, 28)),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpace.s),
           InfoLine(icon: Icons.schedule_rounded, text: formatWhen(r.when), strong: true),
           InfoLine(icon: Icons.place_outlined, text: r.placeName),
           if (whoLine != null) InfoLine(icon: Icons.person_outline_rounded, text: whoLine),
-          const SizedBox(height: 12),
-          Align(alignment: Alignment.centerLeft, child: StatusPill(r.status, forVolunteer: forVolunteer)),
         ],
       ),
     );
@@ -317,12 +326,13 @@ void showDone(BuildContext context, String message, {bool success = false}) {
     ..showSnackBar(SnackBar(
       content: Row(
         children: [
-          Icon(Icons.check_circle_rounded, color: p.highlight, size: AppText.icon(context, 24)),
+          Icon(Icons.check_circle_rounded, color: p.ground, size: AppText.icon(context, 24)),
           const SizedBox(width: AppSpace.m),
           Expanded(child: Text(message)),
         ],
       ),
-      duration: const Duration(seconds: 8),
+      // Long enough for a slow reader; with VoiceOver on, until closed.
+      duration: MediaQuery.accessibleNavigationOf(context) ? const Duration(days: 1) : const Duration(seconds: 8),
       showCloseIcon: true,
       closeIconColor: p.ground,
     ));
@@ -530,4 +540,31 @@ class _SuccessPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SuccessPainter old) => old.t != t || old.ink != ink;
+}
+
+/// The day of a visit as a calendar leaf: weekday over the date, so "when"
+/// is the first thing the eye lands on.
+class DateTile extends StatelessWidget {
+  const DateTile({super.key, required this.when});
+
+  final DateTime when;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final parts = formatShortDay(when).split(' ');
+    return ExcludeSemantics(
+      child: Container(
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: AppSpace.s),
+        decoration: BoxDecoration(color: p.accentTint, borderRadius: BorderRadius.circular(AppRadius.row)),
+        child: Column(
+          children: [
+            Text(parts.first.toUpperCase(), textScaler: TextScaler.noScaling, style: AppText.label(p.accentText).copyWith(letterSpacing: 1.2)),
+            Text(parts.last, textScaler: TextScaler.noScaling, style: AppText.code(p.accentText).copyWith(fontSize: 32, letterSpacing: 0)),
+          ],
+        ),
+      ),
+    );
+  }
 }

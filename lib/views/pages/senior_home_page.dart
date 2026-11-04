@@ -78,7 +78,13 @@ String todayLine(List<HelpRequest> upcoming, DateTime now, {required bool you, S
   final whose = you ? "your" : "$name's";
   if (upcoming.isEmpty) return you ? "Nothing is planned. Ask for help whenever you need it." : "$name has nothing planned.";
   final urgent = upcoming.where((r) => r.needsBackup(now)).firstOrNull;
-  if (urgent != null) return "Nobody has said yes to $whose ${urgent.type.noun} yet.";
+  final booked = upcoming.where((r) => r.volunteerId != null).firstOrNull;
+  // Good news first; the warning card right below carries the detail.
+  if (urgent != null) {
+    final helper = appState.userById(booked?.volunteerId);
+    final pending = "${whose[0].toUpperCase()}${whose.substring(1)} ${urgent.type.noun} still needs a volunteer.";
+    return helper == null ? pending : "${helper.firstName} is helping with $whose ${booked!.type.noun} ${whenPhrase(booked.when, now: now)}. $pending";
+  }
   final r = upcoming.first;
   final volunteer = appState.userById(r.volunteerId);
   if (volunteer == null) {
@@ -324,36 +330,18 @@ class EmergencyPanel extends StatelessWidget {
             )
           else
             SecondaryButton(label: "Add someone to call", onPressed: () => selectedPageNotifier.value = 2),
+          // Someone hard of hearing may rather write than talk.
+          if (hasContact && user.needs.contains(MobilityNeed.hearing)) ...[
+            const SizedBox(height: AppSpace.s),
+            SecondaryButton(
+              label: "Message ${user.emergencyName!.split(' ').first}",
+              icon: Icons.chat_bubble_outline_rounded,
+              onPressed: () => contact(context, user.emergencyPhone!, message: true),
+            ),
+          ],
           const SizedBox(height: 8),
           Text("In an emergency, call your local emergency number first.", style: AppText.small(p.muted)),
         ],
-      ),
-    );
-  }
-}
-
-/// The day of a visit as a calendar leaf: weekday over the date, so "when"
-/// is the first thing the eye lands on.
-class DateTile extends StatelessWidget {
-  const DateTile({super.key, required this.when});
-
-  final DateTime when;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    final parts = formatShortDay(when).split(' ');
-    return ExcludeSemantics(
-      child: Container(
-        width: 72,
-        padding: const EdgeInsets.symmetric(vertical: AppSpace.s),
-        decoration: BoxDecoration(color: p.accentTint, borderRadius: BorderRadius.circular(AppRadius.row)),
-        child: Column(
-          children: [
-            Text(parts.first.toUpperCase(), textScaler: TextScaler.noScaling, style: AppText.label(p.accentText).copyWith(letterSpacing: 1.2)),
-            Text(parts.last, textScaler: TextScaler.noScaling, style: AppText.code(p.accentText).copyWith(fontSize: 32, letterSpacing: 0)),
-          ],
-        ),
       ),
     );
   }

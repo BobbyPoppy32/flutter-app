@@ -15,17 +15,41 @@ class WelcomePage extends StatelessWidget {
     final p = context.palette;
     final returning = appState.ownAccounts;
     void open(bool demo) => Navigator.push(context, MaterialPageRoute(builder: (_) => RolePage(demo: demo)));
+    final mq = MediaQuery.of(context);
+    // At large text the drawing would push the words off the first screen.
+    final large = mq.textScaler.scale(1) > 1.5;
+    // The buttons stay pinned at the bottom, except when they would take too
+    // much of the screen (large text, landscape, several accounts): then they
+    // scroll with the page.
+    final pinned = !large && mq.orientation == Orientation.portrait && returning.length < 2;
+    final actions = _ActionBar(
+      pinned: pinned,
+      children: [
+        if (returning.isNotEmpty) ...[
+          for (final user in returning.take(2)) ...[
+            PrimaryButton(label: "Continue as ${user.firstName}", onPressed: () => appState.signIn(user)),
+            const SizedBox(height: AppSpace.s),
+          ],
+          SecondaryButton(label: "I'm someone new", onPressed: () => open(false)),
+        ] else
+          PrimaryButton(label: "Get started", onPressed: () => open(false)),
+        const SizedBox(height: AppSpace.xs),
+        TextButton(onPressed: () => open(true), child: const Text("Look around with sample people")),
+      ],
+    );
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: PageBody(
-                padding: const EdgeInsets.fromLTRB(AppSpace.xxl, AppSpace.l, AppSpace.xxl, AppSpace.xxl),
+                padding: EdgeInsets.fromLTRB(AppSpace.xxl, AppSpace.l, AppSpace.xxl, pinned ? AppSpace.xxl : 0),
                 children: [
                   const Align(alignment: Alignment.centerLeft, child: AlongsideLogo(size: 26)),
-                  const SizedBox(height: AppSpace.l),
-                  const RouteMotif(height: 120),
+                  if (!large) ...[
+                    const SizedBox(height: AppSpace.l),
+                    const RouteMotif(height: 120),
+                  ],
                   const SizedBox(height: AppSpace.l),
                   Semantics(
                     header: true,
@@ -45,24 +69,11 @@ class WelcomePage extends StatelessWidget {
                     "You see who is coming, and a code they show at your door",
                   ])
                     InfoLine(icon: Icons.check_circle_outline_rounded, text: line),
+                  if (!pinned) ...[const SizedBox(height: AppSpace.xxl), actions],
                 ],
               ),
             ),
-            // Pinned, so the way in is on screen even at the largest text.
-            _ActionBar(
-              children: [
-                if (returning.isNotEmpty) ...[
-                  for (final user in returning.take(2)) ...[
-                    PrimaryButton(label: "Continue as ${user.firstName}", onPressed: () => appState.signIn(user)),
-                    const SizedBox(height: AppSpace.s),
-                  ],
-                  SecondaryButton(label: "I'm someone new", onPressed: () => open(false)),
-                ] else
-                  PrimaryButton(label: "Get started", onPressed: () => open(false)),
-                const SizedBox(height: AppSpace.xs),
-                TextButton(onPressed: () => open(true), child: const Text("Look around with sample people")),
-              ],
-            ),
+            if (pinned) actions,
           ],
         ),
       ),
@@ -72,19 +83,19 @@ class WelcomePage extends StatelessWidget {
 
 /// Buttons kept at the bottom of the screen, above a hairline.
 class _ActionBar extends StatelessWidget {
-  const _ActionBar({required this.children});
+  const _ActionBar({required this.children, required this.pinned});
 
   final List<Widget> children;
+  final bool pinned;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final column = Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: children);
+    if (!pinned) return Padding(padding: const EdgeInsets.only(bottom: AppSpace.xxl), child: column);
     return DecoratedBox(
-      decoration: BoxDecoration(color: p.ground, border: Border(top: BorderSide(color: p.border.withValues(alpha: 0.4)))),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(AppSpace.xxl, AppSpace.m, AppSpace.xxl, AppSpace.s),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
-      ),
+      decoration: BoxDecoration(color: p.ground, border: Border(top: BorderSide(color: p.border.withValues(alpha: 0.35)))),
+      child: Padding(padding: const EdgeInsets.fromLTRB(AppSpace.xxl, AppSpace.m, AppSpace.xxl, AppSpace.s), child: column),
     );
   }
 }

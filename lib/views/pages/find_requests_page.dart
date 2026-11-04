@@ -211,7 +211,7 @@ class _OpenRequestCard extends StatelessWidget {
             children: [
               IconTile(iconFor(r.type), size: 44),
               const SizedBox(width: AppSpace.m),
-              Expanded(child: Padding(padding: const EdgeInsets.only(top: 10), child: Text(r.type.label, style: AppText.section(p.ink)))),
+              Expanded(child: Padding(padding: const EdgeInsets.only(top: 8), child: Text(r.type.label, style: AppText.heading(p.ink)))),
               Icon(Icons.chevron_right_rounded, color: p.muted, size: AppText.icon(context, 28)),
             ],
           ),
@@ -225,19 +225,11 @@ class _OpenRequestCard extends StatelessWidget {
           if (r.needs.isNotEmpty) InfoLine(icon: Icons.accessibility_new_rounded, text: r.needs.map((n) => n.label).join(", ")),
           if (r.needsBackup(DateTime.now())) ...[
             const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: p.open.bg, borderRadius: BorderRadius.circular(AppRadius.pill)),
-              child: Text("Needed soon: nobody has said yes", style: AppText.label(p.open.ink)),
-            ),
+            Align(alignment: Alignment.centerLeft, child: NoticeChip("Needed soon: nobody has said yes", icon: Icons.schedule_rounded)),
           ],
           if (r.droppedBy.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: p.open.bg, borderRadius: BorderRadius.circular(AppRadius.pill)),
-              child: Text("Their volunteer had to drop out", style: AppText.label(p.open.ink)),
-            ),
+            Align(alignment: Alignment.centerLeft, child: NoticeChip("Their volunteer had to drop out", icon: Icons.person_off_outlined)),
           ],
         ],
       ),

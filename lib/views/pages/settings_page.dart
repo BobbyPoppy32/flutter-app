@@ -54,8 +54,8 @@ class SettingsPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: p.ground, borderRadius: BorderRadius.circular(AppRadius.row)),
-                    child: Text("Daniel is helping with your blood test on Thursday at 9:40 am.", style: AppText.body(p.ink)),
+                    decoration: BoxDecoration(color: p.raised, borderRadius: BorderRadius.circular(AppRadius.row)),
+                    child: Text("This is how big the words will be on every screen.", style: AppText.body(p.ink)),
                   ),
                 ],
               ),

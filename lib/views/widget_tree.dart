@@ -64,7 +64,7 @@ class WidgetTree extends StatelessWidget {
           bottomNavigationBar: MediaQuery.withClampedTextScaling(
             maxScaleFactor: 1.5,
             child: DecoratedBox(
-              decoration: BoxDecoration(border: Border(top: BorderSide(color: p.border))),
+              decoration: BoxDecoration(border: Border(top: BorderSide(color: p.border.withValues(alpha: 0.35)))),
               child: NavigationBar(
                 selectedIndex: index,
                 onDestinationSelected: (i) {

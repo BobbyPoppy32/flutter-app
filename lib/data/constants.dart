@@ -24,7 +24,7 @@ class AppColors {
   // Apricot warmth. Only a fill behind dark ink (7.4:1), or the logo's
   // second stroke on navy; too light to be text on linen.
   static const Color apricot = Color(0xFFE8A25A);
-  // The logo's second stroke on light grounds (3.9:1 on linen).
+  // The logo's second stroke on light grounds (3.7:1 on linen).
   static const Color apricotDeep = Color(0xFFB8681F);
   static const Color charcoal = Color(0xFF16181D);
 }

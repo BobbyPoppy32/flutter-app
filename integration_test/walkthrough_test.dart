@@ -73,7 +73,7 @@ void main() {
 
     await text("Ask for help");
     await shot("05-request-what");
-    await text("Scan or X-ray");
+    await text("Scan or X\u2011ray");
     await text("Next");
     await shot("06-request-when");
     await text("Tomorrow");

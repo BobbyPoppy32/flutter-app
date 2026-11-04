@@ -10,7 +10,7 @@ enum UserRole {
 enum HelpType {
   checkup("Doctor's check-up", "A visit to your doctor or clinic", "check-up"),
   medicine("Pick up medicine", "Collect a prescription from the pharmacy", "medicine pickup"),
-  scan("Scan or X-ray", "Imaging such as an X-ray, ultrasound or MRI", "scan"),
+  scan("Scan or X\u2011ray", "Imaging such as an X-ray, ultrasound or MRI", "scan"),
   labTest("Blood or lab test", "A blood draw or other test at a lab", "lab test"),
   ride("Ride to an appointment", "Someone drives you there and back", "ride"),
   comeAlong("Someone to come with me", "Company and an extra pair of ears", "appointment");

@@ -172,9 +172,11 @@ class VolunteerActions extends StatelessWidget {
     }
     if (r.volunteerId != me.id) return const SizedBox.shrink();
 
-    final dropOut = SecondaryButton(
-      label: "I can't make it",
-      color: p.danger,
+    // A clear red link rather than a big button: it must be findable, but
+    // it is never the thing the screen is for.
+    final dropOut = TextButton(
+      style: TextButton.styleFrom(foregroundColor: p.danger),
+      child: const Text("I can't make it"),
       onPressed: () async {
         final soon = r.when.difference(now).inHours < 24;
         final ok = await confirmAction(

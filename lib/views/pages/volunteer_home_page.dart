@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/data/app_state.dart';
 import 'package:flutter_app/data/constants.dart';
+import 'package:flutter_app/data/models.dart';
 import 'package:flutter_app/data/notifiers.dart';
 import 'package:flutter_app/views/pages/volunteer_request_page.dart';
 import 'package:flutter_app/views/widgets/app_widgets.dart';
@@ -45,12 +46,29 @@ class VolunteerHomePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Align(alignment: Alignment.centerLeft, child: StatusPill(next.status, forVolunteer: true)),
-                    const SizedBox(height: 14),
-                    Text(next.type.label, style: AppText.heading(p.ink)),
-                    const SizedBox(height: 4),
-                    Text(formatWhen(next.when), style: AppText.body(p.ink).copyWith(fontWeight: FontWeight.w700)),
-                    InfoLine(icon: Icons.person_outline_rounded, text: nextSenior!.name),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DateTile(when: next.when),
+                        const SizedBox(width: AppSpace.l),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              StatusPill(next.status, forVolunteer: true),
+                              const SizedBox(height: AppSpace.s),
+                              Text(next.type.label, style: AppText.heading(p.ink)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpace.l),
+                    // The door time leads, matching the line under the greeting;
+                    // the appointment time follows.
+                    InfoLine(icon: Icons.door_front_door_outlined, text: "Be at ${nextSenior!.firstName}'s door ${whenPhrase(next.doorTime, now: now)}", strong: true),
+                    InfoLine(icon: Icons.schedule_rounded, text: "${next.type == HelpType.medicine ? 'Pick up' : 'Appointment'} ${whenPhrase(next.when, now: now).replaceFirst(RegExp('^on '), '')}"),
+                    InfoLine(icon: Icons.person_outline_rounded, text: nextSenior.name),
                     InfoLine(icon: Icons.place_outlined, text: "From ${nextSenior.address ?? nextSenior.area} to ${next.placeName}"),
                     const SizedBox(height: 18),
                     VolunteerActions(request: next),

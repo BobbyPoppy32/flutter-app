@@ -32,27 +32,10 @@ class Panel extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         // A tappable card is read as one item, not line by line.
-        child: _OnPanel(
-          child: onTap == null
-              ? body
-              : MergeSemantics(
-                  child: InkWell(onTap: onTap, borderRadius: radius, child: body),
-                ),
-        ),
+        child: onTap == null ? body : MergeSemantics(child: InkWell(onTap: onTap, borderRadius: radius, child: body)),
       ),
     );
   }
-}
-
-/// Marks content as sitting on a panel, so tonal controls inside it switch
-/// to the ground colour and stay visible as buttons.
-class _OnPanel extends InheritedWidget {
-  const _OnPanel({required super.child});
-
-  static bool of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<_OnPanel>() != null;
-
-  @override
-  bool updateShouldNotify(_OnPanel oldWidget) => false;
 }
 
 /// The app bar for pushed screens: a labelled "Back" (not a bare chevron),
@@ -181,16 +164,7 @@ class SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onPanel = _OnPanel.of(context);
-    // A danger action always sits on the ground colour, panel or not, so it
-    // looks the same everywhere.
-    final style = color == null
-        ? (onPanel ? OutlinedButton.styleFrom(backgroundColor: context.palette.ground) : null)
-        : OutlinedButton.styleFrom(
-            foregroundColor: color,
-            backgroundColor: context.palette.ground,
-            side: BorderSide(color: color!, width: 1.5),
-          );
+    final style = color == null ? null : OutlinedButton.styleFrom(foregroundColor: color, side: BorderSide(color: color!, width: 1.5));
     return SizedBox(
       width: double.infinity,
       child: icon == null
@@ -349,6 +323,7 @@ class ChoiceTile extends StatelessWidget {
     final p = context.palette;
     final radius = BorderRadius.circular(AppRadius.row);
     return Semantics(
+      container: true,
       button: !multi,
       checked: multi ? selected : null,
       selected: multi || navigates ? null : selected,
@@ -533,11 +508,12 @@ class StarRating extends StatelessWidget {
                       onChanged!(i);
                     },
                     iconSize: size,
-                    constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
+                    constraints: const BoxConstraints(minWidth: 56, minHeight: 56),
+                    padding: const EdgeInsets.all(AppSpace.xs),
                     icon: Icon(
                       i <= value ? Icons.star_rounded : Icons.star_outline_rounded,
                       color: p.star,
-                      size: AppText.icon(context, 24),
+                      size: AppText.icon(context, 40),
                     ),
                   ),
                 ),
@@ -628,6 +604,32 @@ class IconTile extends StatelessWidget {
         height: d,
         decoration: BoxDecoration(shape: BoxShape.circle, color: selected ? p.panel : p.raised),
         child: Icon(icon, size: d * 0.54, color: selected ? p.accentText : p.ink),
+      ),
+    );
+  }
+}
+
+/// A short warning tag on a card ("Needed soon"), with a glyph so it never
+/// relies on colour alone.
+class NoticeChip extends StatelessWidget {
+  const NoticeChip(this.text, {super.key, this.icon = Icons.schedule_rounded});
+
+  final String text;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpace.m, vertical: 6),
+      decoration: BoxDecoration(color: p.open.bg, borderRadius: BorderRadius.circular(AppRadius.pill)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: AppText.icon(context, 18), color: p.open.ink),
+          const SizedBox(width: 6),
+          Flexible(child: Text(text, style: AppText.label(p.open.ink))),
+        ],
       ),
     );
   }

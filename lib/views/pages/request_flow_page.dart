@@ -243,7 +243,7 @@ class _RequestFlowPageState extends State<RequestFlowPage> {
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: p.ground,
-                  border: Border(top: BorderSide(color: p.border)),
+                  border: Border(top: BorderSide(color: p.border.withValues(alpha: 0.35))),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),

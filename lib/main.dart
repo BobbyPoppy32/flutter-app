@@ -77,7 +77,9 @@ ThemeData buildTheme(AppPalette p, Brightness brightness) {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: p.ink,
-        backgroundColor: p.panel,
+        // A clear fill: the outline says "button" on cards and on the page,
+        // without dark pills sinking into cards in dark mode.
+        backgroundColor: Colors.transparent,
         // Disabled stays readable (muted ink, 5.5:1), never faded out.
         disabledForegroundColor: p.muted,
         minimumSize: const Size(64, 56),
@@ -165,7 +167,7 @@ ThemeData buildTheme(AppPalette p, Brightness brightness) {
       headerBackgroundColor: p.panel,
       headerForegroundColor: p.ink,
     ),
-    dividerTheme: DividerThemeData(color: p.border, thickness: 1, space: 1),
+    dividerTheme: DividerThemeData(color: p.border.withValues(alpha: 0.35), thickness: 1, space: 1),
     progressIndicatorTheme: ProgressIndicatorThemeData(color: p.accent, linearTrackColor: p.panel),
     listTileTheme: ListTileThemeData(minVerticalPadding: 12, iconColor: p.ink, textColor: p.ink),
   );
